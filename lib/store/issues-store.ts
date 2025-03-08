@@ -1,10 +1,10 @@
-import { create } from 'zustand';
-import { Issue, issues as mockIssues, groupIssuesByStatus } from '@/lib/mock-data/issues';
-import { Status } from '@/lib/mock-data/status';
-import { Priority } from '@/lib/mock-data/priorities';
-import { User } from '@/lib/mock-data/users';
+import { groupIssuesByStatus, Issue, issues as mockIssues } from '@/lib/mock-data/issues';
 import { LabelInterface } from '@/lib/mock-data/labels';
+import { Priority } from '@/lib/mock-data/priorities';
 import { Project } from '@/lib/mock-data/projects';
+import { Status } from '@/lib/mock-data/status';
+import { User } from '@/lib/mock-data/users';
+import { create } from 'zustand';
 
 interface IssuesState {
    // Data
@@ -46,7 +46,7 @@ interface IssuesState {
 
 export const useIssuesStore = create<IssuesState>((set, get) => ({
    // Initial state
-   issues: mockIssues,
+   issues: mockIssues.sort((a, b) => b.rank.localeCompare(a.rank)),
    issuesByStatus: groupIssuesByStatus(mockIssues),
 
    // Actions
