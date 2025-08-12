@@ -62,20 +62,28 @@
    },
    "devDependencies": {
       "@eslint/eslintrc": "^3",
+      "@eslint/js": "^9.33.0",
+      "@next/eslint-plugin-next": "^15.4.6",
+      "@stylistic/eslint-plugin": "^5.2.3",
       "@tailwindcss/postcss": "^4",
       "@types/node": "^20",
       "@types/react": "^19",
       "@types/react-dom": "^19",
       "@types/swagger-ui-react": "^5.18.0",
+      "@typescript-eslint/eslint-plugin": "^8.39.1",
       "eslint": "^9",
       "eslint-config-next": "15.2.4",
       "eslint-config-prettier": "^10.0.2",
       "eslint-plugin-prettier": "^5.2.3",
+      "eslint-plugin-react": "^7.37.5",
+      "eslint-plugin-react-hooks": "^5.2.0",
       "husky": "^9.1.7",
       "lint-staged": "^15.4.3",
       "prettier": "^3.5.2",
       "prisma": "^6.12.0",
+      "stylelint": "^16.23.1",
       "tailwindcss": "^4",
-      "typescript": "^5"
+      "typescript": "^5",
+      "typescript-eslint": "^8.39.1"
    }
 }
