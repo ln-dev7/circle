@@ -8,7 +8,11 @@
       "start": "next start",
       "lint": "next lint",
       "format": "prettier --write .",
-      "prepare": "husky install"
+      "prepare": "husky install",
+      "dev:server": "tsx watch server/src/index.ts",
+      "start:server": "tsx server/src/index.ts",
+      "migrate": "drizzle-kit migrate",
+      "seed": "tsx server/src/seed.ts"
    },
    "dependencies": {
       "@hookform/resolvers": "^4.1.2",
@@ -54,7 +58,10 @@
       "usehooks-ts": "^3.1.1",
       "uuid": "^11.1.0",
       "zod": "^3.24.2",
-      "zustand": "^5.0.3"
+      "zustand": "^5.0.3",
+      "better-sqlite3": "^9.4.1",
+      "drizzle-orm": "^0.36.0",
+      "fastify": "^5.1.0"
    },
    "devDependencies": {
       "@eslint/eslintrc": "^3",
@@ -70,6 +77,9 @@
       "lint-staged": "^15.4.3",
       "prettier": "^3.5.2",
       "tailwindcss": "^4",
-      "typescript": "^5"
+      "typescript": "^5",
+      "drizzle-kit": "^0.26.0",
+      "tsx": "^4.19.1",
+      "@types/better-sqlite3": "^7.6.9"
    }
 }
