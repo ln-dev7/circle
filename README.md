@@ -8,7 +8,7 @@
 <br />
 <br />
 
-Project management interface inspired by Linear. Built with Next.js and shadcn/ui, this application allows tracking of issues, projects and teams with a modern, responsive UI.
+This repo is trimmed to only the Inbox page of the original Circle app. It runs a minimal Next.js + shadcn/ui setup focused solely on the notifications inbox UI.
 
 ## 🛠️ Technologies
 
