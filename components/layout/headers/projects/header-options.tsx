@@ -1,15 +1,13 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ListFilter, SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
+import { Filter } from './filter';
 
 export default function HeaderOptions() {
    return (
       <div className="w-full flex justify-between items-center border-b py-1.5 px-6 h-10">
-         <Button size="xs" variant="ghost">
-            <ListFilter className="size-4" />
-            <span className="hidden sm:inline ml-1">Filter</span>
-         </Button>
+         <Filter />
          <Button className="relative" size="xs" variant="secondary">
             <SlidersHorizontal className="size-4" />
             <span className="hidden sm:inline ml-1">Display</span>
