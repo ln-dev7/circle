@@ -80,7 +80,9 @@ export function OrgSwitcher() {
                               lndev-ui
                            </DropdownMenuItem>
                            <DropdownMenuSeparator />
-                           <DropdownMenuItem>Create or join workspace</DropdownMenuItem>
+                           <DropdownMenuItem asChild>
+                              <Link href="/onboarding">Create or join workspace</Link>
+                           </DropdownMenuItem>
                            <DropdownMenuItem>Add an account</DropdownMenuItem>
                         </DropdownMenuSubContent>
                      </DropdownMenuPortal>

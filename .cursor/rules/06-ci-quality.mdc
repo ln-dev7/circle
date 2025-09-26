@@ -1,0 +1,18 @@
+---
+description: CI pipeline & quality gates
+globs:
+  - ".github/workflows/**"
+  - "**/*"
+alwaysApply: false
+---
+
+# CI & Quality Gates
+CI MUST:
+- build, typecheck, lint
+- curl /api/health trả 200
+
+PR CHECKLIST (đi vào PR template):
+- [ ] Zod validation
+- [ ] Auth + RBAC checks
+- [ ] Migration/seed + rollback note
+- [ ] CI xanh

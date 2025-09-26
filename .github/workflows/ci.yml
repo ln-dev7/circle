@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Lint
+      run: pnpm run lint
+
+    - name: Typecheck
+      run: pnpm run typecheck
+
+    - name: Run unit tests
+      run: pnpm run test
+
+    - name: Build
+      run: pnpm run build
+
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
+
+    - name: Run E2E tests
+      run: pnpm run test:e2e
+
+    - name: Health check
+      run: |
+        pnpm run start &
+        sleep 10
+        curl -f http://localhost:3000/api/health || exit 1
+        pkill -f "next start" || true

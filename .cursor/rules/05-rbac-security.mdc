@@ -1,0 +1,17 @@
+---
+description: RBAC roles & security checklist
+globs:
+  - "app/api/**"
+  - "lib/**"
+  - "middleware.ts"
+alwaysApply: false
+---
+
+# RBAC & Security
+ROLES: ADMIN, BRAND_OWNER, CREATOR (mặc định deny-by-default).
+HELPERS: lib/rbac.ts — kiểm tra quyền theo orgId + vai trò.
+
+CHECKLIST:
+- [ ] Session bắt buộc cho routes không public
+- [ ] Sanitize input/output; strip secrets khỏi logs
+- [ ] Rate limit (nếu có hành vi ghi/nhạy cảm)
