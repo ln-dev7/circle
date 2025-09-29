@@ -1,0 +1,16 @@
+---
+description: Repo map & module boundaries for AiM
+globs:
+  - "**/*"
+alwaysApply: false
+---
+
+# Repo Map & Boundaries
+FEATURES: features/{auth,orgs,campaigns,content,assets,calendar,analytics,settings}
+API: app/api/[orgId]/{campaigns,content,assets,schedules,analytics}/...
+DATA: prisma/schema.prisma (source of truth)
+UI: components/layout/*, components/ui/*, components/dashboards/*
+
+RULE:
+- Tôn trọng boundaries: service/repo/UI tách lớp
+- Không gọi Prisma trực tiếp từ UI client

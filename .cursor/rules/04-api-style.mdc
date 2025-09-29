@@ -1,0 +1,16 @@
+---
+description: API style & contracts for route handlers
+globs:
+  - "app/api/**"
+  - "lib/**"
+alwaysApply: false
+---
+
+# API Style (Next.js Route Handlers)
+RESPONSE SHAPE:
+{ "ok": true, "data": ... } | { "ok": false, "error": { "code", "message", "details?" } }
+
+VALIDATION: Zod per route → 400 invalid; 404 not found.
+ORG SCOPING: Lấy orgId từ path; cấm cross-org access.
+PAGINATION: ?page=&limit= → { items, total, page, limit }
+ERRORS: Dùng mã ngắn (e.g., E_VALIDATION, E_FORBIDDEN)

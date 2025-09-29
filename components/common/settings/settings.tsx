@@ -24,6 +24,7 @@ import {
    SiTablecheck,
 } from 'react-icons/si';
 import { Button } from '@/components/ui/button';
+import LanguageSwitcher from './language-switcher';
 
 interface Feature {
    icon: ReactNode;
@@ -241,6 +242,13 @@ export default function Settings() {
                Manage your workspace settings. Your workspace is in the{' '}
                <span className="font-medium">United States</span> region
             </p>
+         </div>
+
+         <div className="mb-10">
+            <div className="flex items-center justify-between mb-6">
+               <h2 className="text-xl font-semibold">Language & Region</h2>
+            </div>
+            <LanguageSwitcher />
          </div>
 
          <div className="mb-10">

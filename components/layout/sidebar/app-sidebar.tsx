@@ -2,6 +2,7 @@
 
 import { RiGithubLine } from '@remixicon/react';
 import * as React from 'react';
+import { useTranslations } from 'next-intl';
 
 import { HelpButton } from '@/components/layout/sidebar/help-button';
 import { NavInbox } from '@/components/layout/sidebar/nav-inbox';
@@ -22,6 +23,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
    const [open, setOpen] = React.useState(true);
    const pathname = usePathname();
    const isSettings = pathname.includes('/settings');
+   const isOrgPage = pathname.match(/^\/[^\/]+$/); // Matches /orgId pattern
+   const t = useTranslations('sidebar');
+
    return (
       <Sidebar collapsible="offcanvas" {...props}>
          <SidebarHeader>{isSettings ? <BackToApp /> : <OrgSwitcher />}</SidebarHeader>
@@ -31,6 +35,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <NavAccount />
                   <NavFeatures />
                   <NavTeamsSettings />
+               </>
+            ) : isOrgPage ? (
+               <>
+                  <NavWorkspace />
                </>
             ) : (
                <>
@@ -52,12 +60,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <X className="size-4" />
                      </div>
                      <div className="text-balance text-lg font-semibold leading-tight group-hover/sidebar:underline">
-                        Open-source layouts by lndev-ui
+                        {t('open_source_layouts')}
                      </div>
-                     <div>
-                        Collection of beautifully crafted open-source layouts UI built with
-                        shadcn/ui.
-                     </div>
+                     <div>{t('layouts_description')}</div>
                      <Link
                         target="_blank"
                         rel="noreferrer"
@@ -72,7 +77,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                            target="_blank"
                            rel="noopener noreferrer"
                         >
-                           square.lndev.me
+                           {t('visit_square')}
                         </Link>
                      </Button>
                   </div>

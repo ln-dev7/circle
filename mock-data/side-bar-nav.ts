@@ -82,6 +82,16 @@ export const accountItems = [
 
 export const featuresItems = [
    {
+      name: 'Campaigns',
+      url: '/campaigns',
+      icon: Layers,
+   },
+   {
+      name: 'Content',
+      url: '/content',
+      icon: FileText,
+   },
+   {
       name: 'Labels',
       url: '/settings/labels',
       icon: Tag,
