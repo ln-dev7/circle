@@ -1,0 +1,20 @@
+---
+description: SOP for AI-SSE — how to deliver a PR
+globs:
+  - "docs/tasks/**"
+  - "app/**"
+  - "features/**"
+  - "app/api/**"
+  - "prisma/**"
+alwaysApply: false
+---
+
+# SOP for AI-SSE (per PR)
+ACCEPTANCE (check all):
+- Feature chạy sau khi `pnpm dev`
+- Inputs validated (Zod); Auth + RBAC: 401/403 đúng chỗ
+- Có migration + seed + rollback note (dev)
+- CI pass (build, typecheck, lint, /api/health)
+
+RESPONSE FORMAT = theo OUTPUT CONTRACT.
+Nếu chạm schema/kiến trúc → tạo docs/adr/####-*.md

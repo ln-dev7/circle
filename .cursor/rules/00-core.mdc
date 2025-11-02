@@ -1,0 +1,21 @@
+---
+description: Core context & output contract for AiM
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Core Project Context (AiM)
+STACK: Next.js 15, React 19, TS, Prisma + Postgres, NextAuth, shadcn/ui, Zod.
+DOMAINS: Organization, Campaign, Content, Asset, Schedule, AnalyticsEvent.
+
+## OUTPUT CONTRACT (include in every response)
+1) CHANGES — file list + brief diff
+2) COMMANDS — install/migrate/dev/test
+3) TESTS/RESULTS — build/typecheck/lint/health logs
+4) GIT — branch name, commit SHAs, PR link (if cloud)
+
+MUST READ (if present): docs/SPEC.md, docs/data-model.md, docs/api/*.md
+DO NOT:
+- Touch real `.env`; only update `.env.example`
+- Add dependencies without explicit approval

@@ -1,0 +1,14 @@
+{
+   "buildCommand": "pnpm run db:generate && pnpm run build",
+   "devCommand": "pnpm run dev",
+   "installCommand": "pnpm install",
+   "framework": "nextjs",
+   "functions": {
+      "app/api/**/*.ts": {
+         "maxDuration": 30
+      }
+   },
+   "env": {
+      "NODE_ENV": "production"
+   }
+}

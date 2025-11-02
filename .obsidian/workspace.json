@@ -1,0 +1,211 @@
+{
+   "main": {
+      "id": "893e4335666bb73c",
+      "type": "split",
+      "children": [
+         {
+            "id": "11c40342203930f7",
+            "type": "tabs",
+            "children": [
+               {
+                  "id": "b1d29e7c72ab1df3",
+                  "type": "leaf",
+                  "state": {
+                     "type": "markdown",
+                     "state": {
+                        "file": "docs/ui/campaigns.md",
+                        "mode": "source",
+                        "source": false
+                     },
+                     "icon": "lucide-file",
+                     "title": "campaigns"
+                  }
+               }
+            ]
+         }
+      ],
+      "direction": "vertical"
+   },
+   "left": {
+      "id": "72e3f419536dccb2",
+      "type": "split",
+      "children": [
+         {
+            "id": "15caff196190004c",
+            "type": "tabs",
+            "children": [
+               {
+                  "id": "5c458420e26c3b03",
+                  "type": "leaf",
+                  "state": {
+                     "type": "file-explorer",
+                     "state": {
+                        "sortOrder": "alphabetical",
+                        "autoReveal": false
+                     },
+                     "icon": "lucide-folder-closed",
+                     "title": "Files"
+                  }
+               },
+               {
+                  "id": "53b843ad39ed6c0f",
+                  "type": "leaf",
+                  "state": {
+                     "type": "search",
+                     "state": {
+                        "query": "",
+                        "matchingCase": false,
+                        "explainSearch": false,
+                        "collapseAll": false,
+                        "extraContext": false,
+                        "sortOrder": "alphabetical"
+                     },
+                     "icon": "lucide-search",
+                     "title": "Search"
+                  }
+               },
+               {
+                  "id": "96501c8e7e5e3dce",
+                  "type": "leaf",
+                  "state": {
+                     "type": "bookmarks",
+                     "state": {},
+                     "icon": "lucide-bookmark",
+                     "title": "Bookmarks"
+                  }
+               }
+            ]
+         }
+      ],
+      "direction": "horizontal",
+      "width": 242.5
+   },
+   "right": {
+      "id": "291dec6b9bbe827e",
+      "type": "split",
+      "children": [
+         {
+            "id": "c54902261a13dcf7",
+            "type": "tabs",
+            "children": [
+               {
+                  "id": "650593ff38043448",
+                  "type": "leaf",
+                  "state": {
+                     "type": "backlink",
+                     "state": {
+                        "file": "docs/ui/campaigns.md",
+                        "collapseAll": false,
+                        "extraContext": false,
+                        "sortOrder": "alphabetical",
+                        "showSearch": false,
+                        "searchQuery": "",
+                        "backlinkCollapsed": false,
+                        "unlinkedCollapsed": true
+                     },
+                     "icon": "links-coming-in",
+                     "title": "Backlinks for campaigns"
+                  }
+               },
+               {
+                  "id": "2d9a526162c43ded",
+                  "type": "leaf",
+                  "state": {
+                     "type": "outgoing-link",
+                     "state": {
+                        "file": "docs/ui/campaigns.md",
+                        "linksCollapsed": false,
+                        "unlinkedCollapsed": true
+                     },
+                     "icon": "links-going-out",
+                     "title": "Outgoing links from campaigns"
+                  }
+               },
+               {
+                  "id": "5092e30ea33d8ccd",
+                  "type": "leaf",
+                  "state": {
+                     "type": "tag",
+                     "state": {
+                        "sortOrder": "frequency",
+                        "useHierarchy": true,
+                        "showSearch": false,
+                        "searchQuery": ""
+                     },
+                     "icon": "lucide-tags",
+                     "title": "Tags"
+                  }
+               },
+               {
+                  "id": "35aaf7d0cc18ec7f",
+                  "type": "leaf",
+                  "state": {
+                     "type": "outline",
+                     "state": {
+                        "file": "docs/ui/campaigns.md",
+                        "followCursor": false,
+                        "showSearch": false,
+                        "searchQuery": ""
+                     },
+                     "icon": "lucide-list",
+                     "title": "Outline of campaigns"
+                  }
+               }
+            ]
+         }
+      ],
+      "direction": "horizontal",
+      "width": 300,
+      "collapsed": true
+   },
+   "left-ribbon": {
+      "hiddenItems": {
+         "switcher:Open quick switcher": false,
+         "graph:Open graph view": false,
+         "canvas:Create new canvas": false,
+         "daily-notes:Open today's daily note": false,
+         "templates:Insert template": false,
+         "command-palette:Open command palette": false,
+         "bases:Create new base": false
+      }
+   },
+   "active": "5c458420e26c3b03",
+   "lastOpenFiles": [
+      "node_modules/@testing-library",
+      "node_modules/@playwright",
+      "node_modules/@eslint",
+      "node_modules/@tailwindcss",
+      "node_modules/@kayron013",
+      "components/campaigns/content/index.ts",
+      "components/campaigns/analytics/index.ts",
+      "components/campaigns/members/index.ts",
+      "app/api/[orgId]/campaigns/[id]/tasks/[taskId]/route.ts",
+      "app/api/[orgId]/campaigns/[id]/tasks/[taskId]",
+      "app/api/[orgId]/campaigns/[id]/contents/route.ts",
+      "docs/tasks/PR-002-campaigns-content-crud.md",
+      "docs/tasks/PR-001-auth-prisma.md",
+      "docs/ui/campaigns.md",
+      "docs/ui/README.md",
+      "docs/ui/dashboards.md",
+      "docs/ui/content-editor.md",
+      "docs/ui/auth.md",
+      "docs/ui/dashboard-layout.md",
+      "docs/ui/content-layout.md",
+      "docs/ui/campaigns-layout.md",
+      "docs/ui/schedule.md",
+      "docs/adr/0002-schedule-system-architecture.md",
+      "docs/design/schedule/README.md",
+      "docs/tasks/PR-012-documentation-deployment.md",
+      "docs/tasks/PR-011-testing-quality.md",
+      "docs/tasks/PR-010-performance-optimization.md",
+      "docs/tasks/PR-009-settings-management.md",
+      "docs/tasks/PR-008-analytics-reporting.md",
+      "docs/tasks/PR-007-scheduling-calendar.md",
+      "docs/tasks/README.md",
+      "docs/tasks/PR-006-ai-integration.md",
+      "docs/tasks/PR-005-dashboards.md",
+      "docs/tasks/PR-004-assets-upload.md",
+      "docs/tasks/PR-003-rbac-navigation.md",
+      "docs/playbooks/rollback.md"
+   ]
+}

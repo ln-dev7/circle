@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import { SessionProvider } from 'next-auth/react';
 import './globals.css';
 
 const geistSans = Geist({
@@ -55,21 +58,30 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from '@/components/layout/theme-provider';
 
-export default function RootLayout({
+export default async function RootLayout({
    children,
 }: Readonly<{
    children: React.ReactNode;
 }>) {
+   const messages = await getMessages();
+
    return (
       <html lang="en" suppressHydrationWarning>
          <head>
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
          </head>
-         <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}>
-            <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-               {children}
-               <Toaster />
-            </ThemeProvider>
+         <body
+            suppressHydrationWarning
+            className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}
+         >
+            <NextIntlClientProvider messages={messages}>
+               <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+                  <SessionProvider>
+                     {children}
+                     <Toaster />
+                  </SessionProvider>
+               </ThemeProvider>
+            </NextIntlClientProvider>
          </body>
       </html>
    );

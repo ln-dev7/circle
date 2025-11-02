@@ -1,0 +1,22 @@
+---
+description: Guardrails — permissions, limits, safety
+globs:
+  - "app/**"
+  - "features/**"
+  - "prisma/**"
+  - "app/api/**"
+  - "lib/**"
+alwaysApply: false
+---
+
+# Guardrails
+WRITE ALLOWED: app/**, features/**, lib/**, prisma/**, app/api/**
+ASK FIRST: package.json, pnpm-lock.yaml, next.config.ts, .github/workflows/**
+
+SECURITY:
+- Mọi route phải check session + RBAC
+- Validate input bằng Zod; trả JSON { ok, data | error }
+
+LIMITS:
+- ≤ 20 files / ≤ 800 lines diff / PR; vượt ngưỡng → dừng và hỏi
+- Không ghi logs nhạy cảm (PII)
