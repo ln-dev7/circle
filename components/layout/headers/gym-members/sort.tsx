@@ -1,7 +1,6 @@
 'use client';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
 import { useGymMembersFilterStore, GymMembersSortOption } from '@/store/gym-members-filter-store';
 import { cn } from '@/lib/utils';
 
