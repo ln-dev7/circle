@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGymEquipmentFilterStore } from '@/store/gym-equipment-filter-store';
 import { EquipmentCategory, EquipmentStatus, MaintenancePriority } from '@/mock-data/gym-equipment';
 
@@ -32,7 +31,7 @@ export function FilterPopover({ children }: FilterPopoverProps) {
     <Popover>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-64" align="end">
-        <ScrollArea className="h-[400px]">
+        <div className="max-h-[400px] overflow-y-auto">
           <div className="space-y-4 pr-4">
             <div className="flex items-center justify-between">
               <h4 className="font-medium">Filter Equipment</h4>
@@ -113,7 +112,7 @@ export function FilterPopover({ children }: FilterPopoverProps) {
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
       </PopoverContent>
     </Popover>
   );

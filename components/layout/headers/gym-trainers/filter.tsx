@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useGymTrainersFilterStore } from '@/store/gym-trainers-filter-store';
 import { TrainerStatus, TrainerSpecialty } from '@/mock-data/gym-trainers';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FilterPopoverProps {
   children: React.ReactNode;
@@ -96,7 +95,7 @@ export function FilterPopover({ children }: FilterPopoverProps) {
 
           <div className="space-y-3">
             <Label className="text-sm font-medium">Specialties</Label>
-            <ScrollArea className="h-[200px]">
+            <div className="max-h-[200px] overflow-y-auto">
               <div className="space-y-2 pr-4">
                 {specialties.map((specialty) => (
                   <div key={specialty} className="flex items-center gap-2">
@@ -114,7 +113,7 @@ export function FilterPopover({ children }: FilterPopoverProps) {
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           </div>
         </div>
       </PopoverContent>
