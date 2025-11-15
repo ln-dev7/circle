@@ -14,6 +14,12 @@ import {
    Clock,
    Zap,
    UserRound,
+   Dumbbell,
+   CalendarDays,
+   UserCheck,
+   Calendar,
+   CreditCard,
+   ClipboardCheck,
 } from 'lucide-react';
 
 export const inboxItems = [
@@ -44,6 +50,44 @@ export const workspaceItems = [
       name: 'Members',
       url: '/lndev-ui/members',
       icon: UserRound,
+   },
+];
+
+export const gymManagementItems = [
+   {
+      name: 'Gym Members',
+      url: '/lndev-ui/gym-members',
+      icon: Users,
+   },
+   {
+      name: 'Classes',
+      url: '/lndev-ui/gym-classes',
+      icon: CalendarDays,
+   },
+   {
+      name: 'Trainers',
+      url: '/lndev-ui/gym-trainers',
+      icon: UserCheck,
+   },
+   {
+      name: 'Equipment',
+      url: '/lndev-ui/gym-equipment',
+      icon: Dumbbell,
+   },
+   {
+      name: 'Bookings',
+      url: '/lndev-ui/gym-bookings',
+      icon: Calendar,
+   },
+   {
+      name: 'Memberships',
+      url: '/lndev-ui/gym-memberships',
+      icon: CreditCard,
+   },
+   {
+      name: 'Attendance',
+      url: '/lndev-ui/gym-attendance',
+      icon: ClipboardCheck,
    },
 ];
 
