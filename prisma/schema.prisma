@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+  posts Post[]
+}
+
+model Post {
+  id        Int     @id @default(autoincrement())
+  title     String
+  content   String?
+  published Boolean @default(false)
+  authorId  Int
+  author    User    @relation(fields: [authorId], references: [id])
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  description String?
+  website     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  teams       Team[]
+  onboardings Onboarding[]
+
+  @@map("companies")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Foreign keys
+  companyId String
+
+  // Relations
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  onboardings Onboarding[]
+
+  @@map("teams")
+}
+
+model Onboarding {
+  id            String           @id @default(cuid())
+  employeeName  String
+  employeeEmail String
+  position      String
+  startDate     DateTime
+  status        OnboardingStatus @default(PENDING)
+  notes         String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Foreign keys
+  companyId String
+  teamId    String?
+
+  // Relations
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  team    Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  @@map("onboardings")
+}
+
+enum OnboardingStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
