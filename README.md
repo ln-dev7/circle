@@ -10,6 +10,8 @@
 
 Project management interface inspired by Linear. Built with Next.js and shadcn/ui, this application allows tracking of issues, projects and teams with a modern, responsive UI.
 
+> The BaseUI code is available on [Square UI Pro](https://pro.lndev.me/templates).
+
 ## 🛠️ Technologies
 
 - **Framework**: [Next.js](https://nextjs.org/)

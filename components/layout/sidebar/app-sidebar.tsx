@@ -42,6 +42,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
          </SidebarContent>
          <SidebarFooter>
             <div className="w-full flex flex-col gap-2">
+               <p className="text-center text-[11px] text-muted-foreground">
+                  BaseUI code on{' '}
+                  <Link
+                     href="https://pro.lndev.me/templates"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="underline hover:text-foreground transition-colors"
+                  >
+                     Square UI Pro
+                  </Link>
+               </p>
                {open && (
                   <div className="group/sidebar relative flex flex-col gap-2 rounded-lg border p-4 text-sm w-full">
                      <div
