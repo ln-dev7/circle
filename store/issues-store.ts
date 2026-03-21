@@ -38,6 +38,7 @@ interface IssuesState {
 
    // Status management
    updateIssueStatus: (issueId: string, newStatus: Status) => void;
+   moveIssueInList: (issueId: string, newStatus: Status, newRank: string) => void;
 
    // Priority management
    updateIssuePriority: (issueId: string, newPriority: Priority) => void;
@@ -182,6 +183,9 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
    // Status management
    updateIssueStatus: (issueId: string, newStatus: Status) => {
       get().updateIssue(issueId, { status: newStatus });
+   },
+   moveIssueInList: (issueId: string, newStatus: Status, newRank: string) => {
+      get().updateIssue(issueId, { status: newStatus, rank: newRank });
    },
 
    // Priority management

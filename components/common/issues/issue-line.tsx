@@ -7,17 +7,25 @@ import { LabelBadge } from './label-badge';
 import { PrioritySelector } from './priority-selector';
 import { ProjectBadge } from './project-badge';
 import { StatusSelector } from './status-selector';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { IssueContextMenu } from './issue-context-menu';
 
 export function IssueLine({ issue, layoutId = false }: { issue: Issue; layoutId?: boolean }) {
+   const prefersReducedMotion = useReducedMotion();
+
    return (
       <ContextMenu>
          <ContextMenuTrigger asChild>
             <motion.div
                {...(layoutId && { layoutId: `issue-line-${issue.identifier}` })}
+               layout
+               transition={
+                  prefersReducedMotion
+                     ? { duration: 0 }
+                     : { layout: { duration: 0.16, ease: [0.2, 0, 0, 1] } }
+               }
                //href={`/lndev-ui/issue/${issue.identifier}`}
                className="w-full flex items-center justify-start h-11 px-6 hover:bg-sidebar/50"
             >

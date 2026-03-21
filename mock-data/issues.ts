@@ -490,3 +490,7 @@ export function sortIssuesByPriority(issues: Issue[]): Issue[] {
             priorityOrder[b.priority.id as keyof typeof priorityOrder]
       );
 }
+
+export function sortIssuesByRank(issues: Issue[]): Issue[] {
+   return issues.slice().sort((a, b) => a.rank.localeCompare(b.rank));
+}
