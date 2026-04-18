@@ -63,7 +63,7 @@ export function HelpButton() {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-               <Link href="https://ecaefmew.mychariow.shop/prd_3cu1s0" target="_blank">
+               <Link href="https://lndev.mychariow.shop/prd_3cu1s0" target="_blank">
                   <RiBox3Fill className="mr-2 h-4 w-4" />
                   <span>Support project</span>
                </Link>
