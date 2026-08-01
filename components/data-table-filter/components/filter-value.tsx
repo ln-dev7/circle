@@ -445,7 +445,7 @@ const OptionItem = memo(function OptionItem({
       <div className="flex items-center gap-1.5">
         <Checkbox
           checked={selected}
-          className="opacity-0 data-[state=checked]:opacity-100 group-data-[selected=true]:opacity-100 mr-1 border-muted-foreground/40 data-[state=checked]:border-indigo-500 data-[state=checked]:bg-indigo-500 data-[state=checked]:text-white"
+          className="opacity-0 data-[state=checked]:opacity-100 group-data-[selected=true]:opacity-100 mr-1 border-muted-foreground/40 data-[state=checked]:border-violet-500 data-[state=checked]:bg-violet-500 data-[state=checked]:text-white"
         />
         {Icon &&
           (isValidElement(Icon) ? (
