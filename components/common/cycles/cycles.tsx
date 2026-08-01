@@ -17,7 +17,7 @@ export default function Cycles() {
             <Fragment key={cycle.id}>
                <div className="w-full flex items-stretch">
                   {/* Date rail */}
-                  <div className="relative w-20 shrink-0 flex flex-col items-end pr-4">
+                  <div className="relative w-14 sm:w-20 shrink-0 flex flex-col items-end pr-4">
                      {/* Vertical rail, centered on the dots (pr-4 = 16px + half dot 5px - half line) */}
                      <div className="absolute right-[20.5px] top-0 bottom-0 w-px bg-border" />
                      <div className="flex items-center gap-2 h-12">

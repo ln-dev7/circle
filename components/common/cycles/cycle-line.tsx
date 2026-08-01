@@ -48,8 +48,8 @@ export default function CycleLine({ cycle }: CycleLineProps) {
             <span className="text-sm font-medium truncate">{cycle.name}</span>
          </div>
 
-         <div className="flex items-center gap-6 shrink-0">
-            <span className="text-xs px-2 py-1 rounded-md bg-accent text-muted-foreground">
+         <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+            <span className="text-xs px-2 py-1 rounded-md bg-accent text-muted-foreground whitespace-nowrap">
                {cycleStatusLabel[cycle.status]}
             </span>
 
@@ -75,7 +75,7 @@ export default function CycleLine({ cycle }: CycleLineProps) {
                </div>
             )}
 
-            <span className="text-sm w-20 text-right">
+            <span className="text-sm w-14 sm:w-20 text-right whitespace-nowrap">
                {cycle.scope} <span className="text-muted-foreground">scope</span>
             </span>
          </div>

@@ -23,17 +23,17 @@ const timeAgo = (date: string) =>
 export default function TeamDocuments() {
    return (
       <div className="w-full">
-         <div className="flex items-center justify-between px-6 py-3">
-            <div className="grid grid-cols-[1fr_90px_90px_40px] w-full items-center text-sm text-muted-foreground">
+         <div className="flex items-center justify-between px-6 py-3 gap-2">
+            <div className="grid grid-cols-[1fr_40px] md:grid-cols-[1fr_90px_90px_40px] w-full items-center text-sm text-muted-foreground">
                <span className="flex items-center gap-1 font-medium">Name ↓</span>
-               <span>Created</span>
-               <span>Last edited</span>
+               <span className="hidden md:block">Created</span>
+               <span className="hidden md:block">Last edited</span>
                <span />
             </div>
             <div className="flex items-center gap-2 shrink-0">
                <Button size="xs" variant="secondary">
-                  <Plus className="size-4 mr-1" />
-                  New document
+                  <Plus className="size-4 md:mr-1" />
+                  <span className="hidden md:inline">New document</span>
                </Button>
                <Button size="xs" variant="ghost">
                   <SlidersHorizontal className="size-4" />
@@ -55,17 +55,17 @@ export default function TeamDocuments() {
                   {folder.documents.map((doc) => (
                      <div
                         key={doc.id}
-                        className="grid grid-cols-[1fr_90px_90px_40px] items-center px-6 h-11 hover:bg-sidebar/50 border-b border-border/30 text-sm"
+                        className="grid grid-cols-[1fr_40px] md:grid-cols-[1fr_90px_90px_40px] items-center px-6 h-11 hover:bg-sidebar/50 border-b border-border/30 text-sm"
                      >
                         <div className="flex items-center gap-2 min-w-0 pl-6">
                            <span className="text-base leading-none">{doc.icon}</span>
                            <span className="font-medium truncate">{doc.name}</span>
                            {doc.pinned && <Pin className="size-3 text-muted-foreground shrink-0" />}
                         </div>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="hidden md:block text-xs text-muted-foreground">
                            {timeAgo(doc.createdAt)}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="hidden md:block text-xs text-muted-foreground">
                            {timeAgo(doc.updatedAt)}
                         </span>
                         <Avatar className="size-5">
