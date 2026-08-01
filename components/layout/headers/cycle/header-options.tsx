@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { IssueFilterTrigger } from '@/components/common/issues/issue-filter-trigger';
 import { getCurrentCycle, getUpcomingCycle } from '@/mock-data/cycles';
 import { useIssuesStore } from '@/store/issues-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
@@ -24,6 +25,7 @@ export default function HeaderOptions({ cycleView }: { cycleView: CycleView }) {
          </div>
 
          <div className="flex items-center gap-1">
+            <IssueFilterTrigger />
             <Button
                size="xs"
                variant={openPanel === 'insights' ? 'secondary' : 'ghost'}

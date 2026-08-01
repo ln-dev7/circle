@@ -7,9 +7,14 @@ import { useIssuesStore } from '@/store/issues-store';
 import { issueFilterColumns } from './issue-filter-columns';
 
 /**
- * Linear-style filter bar: a "Filter" button plus applied filter chips
- * (subject / operator / values / remove), powered by bazza/ui's
- * data-table-filter. Filter state lives in the URL (see filter-store).
+ * Linear-style applied-filters row: filter chips (subject / operator /
+ * values / remove), an icon button to add more filters and a Clear action,
+ * powered by bazza/ui's data-table-filter. Filter state lives in the URL
+ * (see filter-store).
+ *
+ * The row only appears once at least one filter is active — the entry
+ * point "Filter" button lives in the header toolbar (see
+ * <IssueFilterTrigger/>), like Linear.
  */
 export function IssueFilterBar() {
    const { issues } = useIssuesStore();
@@ -22,6 +27,8 @@ export function IssueFilterBar() {
       filters,
       onFiltersChange: setFilters,
    });
+
+   if (filters.length === 0) return null;
 
    return (
       <div className="w-full px-6 py-2 border-b border-border/60 bg-container">
