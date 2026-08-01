@@ -1,87 +1,76 @@
 'use client';
 
-import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs';
+import type { FilterModel, FiltersState } from '@/components/data-table-filter/core/types';
+import { createParser, useQueryState } from 'nuqs';
+import { useCallback } from 'react';
 
 /**
- * Issue filters, synced to the URL via nuqs (?status=…&assignee=…).
- * The hook keeps the exact same API as the previous Zustand store so
- * consumers (Filter dropdown, issue views) don't need to change.
+ * Issue filters, synced to the URL via nuqs under a single `?filters=` param.
+ *
+ * The state shape is bazza/ui's `FiltersState` (an array of
+ * `{ columnId, type, operator, values }`) so it plugs directly into the
+ * Linear-style <DataTableFilter /> component while staying shareable
+ * through the URL.
  */
-export type IssueFilterKey =
-   | 'status'
-   | 'assignee'
-   | 'priority'
-   | 'labels'
-   | 'project'
-   | 'cycle'
-   | 'statusType';
+
+const isFilterModel = (value: unknown): value is FilterModel => {
+   if (typeof value !== 'object' || value === null) return false;
+   const candidate = value as Record<string, unknown>;
+   return (
+      typeof candidate.columnId === 'string' &&
+      typeof candidate.type === 'string' &&
+      typeof candidate.operator === 'string' &&
+      Array.isArray(candidate.values)
+   );
+};
+
+const filtersParser = createParser<FiltersState>({
+   parse: (value) => {
+      try {
+         const parsed: unknown = JSON.parse(value);
+         if (!Array.isArray(parsed)) return null;
+         return parsed.filter(isFilterModel);
+      } catch {
+         return null;
+      }
+   },
+   serialize: (value) => JSON.stringify(value),
+   eq: (a, b) => JSON.stringify(a) === JSON.stringify(b),
+}).withDefault([]);
 
 export interface FilterState {
-   filters: Record<IssueFilterKey, string[]>;
+   /** Active filters (bazza/ui FiltersState). */
+   filters: FiltersState;
+   /** Controlled setter, compatible with useDataTableFilters' onFiltersChange. */
+   setFilters: React.Dispatch<React.SetStateAction<FiltersState>>;
 
-   setFilter: (type: IssueFilterKey, ids: string[]) => void;
-   toggleFilter: (type: IssueFilterKey, id: string) => void;
    clearFilters: () => void;
-   clearFilterType: (type: IssueFilterKey) => void;
-
    hasActiveFilters: () => boolean;
    getActiveFiltersCount: () => number;
 }
 
-const arrayParser = parseAsArrayOf(parseAsString).withDefault([]);
-
-const filterParsers = {
-   status: arrayParser,
-   assignee: arrayParser,
-   priority: arrayParser,
-   labels: arrayParser,
-   project: arrayParser,
-   cycle: arrayParser,
-   statusType: arrayParser,
-};
-
 export function useFilterStore(): FilterState {
-   const [filters, setFilters] = useQueryStates(filterParsers, { history: 'replace' });
+   const [filters, setFiltersState] = useQueryState('filters', filtersParser);
 
-   const setFilter = (type: IssueFilterKey, ids: string[]) => {
-      setFilters({ [type]: ids.length > 0 ? ids : null });
-   };
+   const setFilters: React.Dispatch<React.SetStateAction<FiltersState>> = useCallback(
+      (action) => {
+         void setFiltersState((previous) => {
+            const next = typeof action === 'function' ? action(previous) : action;
+            return next.length > 0 ? next : null;
+         });
+      },
+      [setFiltersState]
+   );
 
-   const toggleFilter = (type: IssueFilterKey, id: string) => {
-      const current = filters[type];
-      const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
-      setFilters({ [type]: next.length > 0 ? next : null });
-   };
-
-   const clearFilters = () => {
-      setFilters({
-         status: null,
-         assignee: null,
-         priority: null,
-         labels: null,
-         project: null,
-         cycle: null,
-         statusType: null,
-      });
-   };
-
-   const clearFilterType = (type: IssueFilterKey) => {
-      setFilters({ [type]: null });
-   };
-
-   const hasActiveFilters = () =>
-      Object.values(filters).some((filterArray) => filterArray.length > 0);
-
-   const getActiveFiltersCount = () =>
-      Object.values(filters).reduce((acc, curr) => acc + curr.length, 0);
+   const clearFilters = useCallback(() => {
+      void setFiltersState(null);
+   }, [setFiltersState]);
 
    return {
       filters,
-      setFilter,
-      toggleFilter,
+      setFilters,
       clearFilters,
-      clearFilterType,
-      hasActiveFilters,
-      getActiveFiltersCount,
+      hasActiveFilters: () => filters.length > 0,
+      getActiveFiltersCount: () => filters.length,
    };
 }

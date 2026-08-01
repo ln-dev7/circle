@@ -6,7 +6,6 @@ import { useIssuesStore } from '@/store/issues-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
 import { BarChart3, PanelRight } from 'lucide-react';
 import { DisplayOptions } from '../display-options';
-import { Filter } from '../issues/filter';
 import { CycleView } from '@/components/common/issues/cycle-issues';
 
 export default function HeaderOptions({ cycleView }: { cycleView: CycleView }) {
@@ -22,7 +21,6 @@ export default function HeaderOptions({ cycleView }: { cycleView: CycleView }) {
             <span className="text-sm text-muted-foreground">
                {count} {count === 1 ? 'issue' : 'issues'}
             </span>
-            <Filter />
          </div>
 
          <div className="flex items-center gap-1">
