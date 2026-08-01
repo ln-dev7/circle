@@ -6,6 +6,7 @@ import {
    Box,
    ChevronRight,
    CopyMinus,
+   Home,
    Layers,
    Link as LinkIcon,
    MoreHorizontal,
@@ -101,7 +102,15 @@ export function NavTeams() {
                         <SidebarMenuSub>
                            <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild>
-                                 <Link href="/lndev-ui/team/CORE/all">
+                                 <Link href={`/lndev-ui/team/${item.id}/overview`}>
+                                    <Home size={14} />
+                                    <span>Home</span>
+                                 </Link>
+                              </SidebarMenuSubButton>
+                           </SidebarMenuSubItem>
+                           <SidebarMenuSubItem>
+                              <SidebarMenuSubButton asChild>
+                                 <Link href={`/lndev-ui/team/${item.id}/all`}>
                                     <CopyMinus size={14} />
                                     <span>Issues</span>
                                  </Link>
@@ -109,11 +118,27 @@ export function NavTeams() {
                            </SidebarMenuSubItem>
                            <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild>
-                                 <Link href="/lndev-ui/team/CORE/all">
+                                 <Link href={`/lndev-ui/team/${item.id}/cycles`}>
                                     <RiDonutChartFill size={14} />
                                     <span>Cycles</span>
                                  </Link>
                               </SidebarMenuSubButton>
+                              <SidebarMenuSub className="mr-0 pr-0">
+                                 <SidebarMenuSubItem>
+                                    <SidebarMenuSubButton asChild>
+                                       <Link href={`/lndev-ui/team/${item.id}/cycle/active`}>
+                                          <span>Current</span>
+                                       </Link>
+                                    </SidebarMenuSubButton>
+                                 </SidebarMenuSubItem>
+                                 <SidebarMenuSubItem>
+                                    <SidebarMenuSubButton asChild>
+                                       <Link href={`/lndev-ui/team/${item.id}/cycle/upcoming`}>
+                                          <span>Upcoming</span>
+                                       </Link>
+                                    </SidebarMenuSubButton>
+                                 </SidebarMenuSubItem>
+                              </SidebarMenuSub>
                            </SidebarMenuSubItem>
                            <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild>
