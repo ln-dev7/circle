@@ -3,10 +3,47 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import { useSearchStore } from '@/store/search-store';
 import { SearchIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import Notifications from './notifications';
+
+const ISSUE_VIEW_TABS = [
+   { label: 'Active', segment: 'active' },
+   { label: 'Backlog', segment: 'backlog' },
+   { label: 'All issues', segment: 'all' },
+];
+
+function IssueViewTabs() {
+   const { orgId, teamId } = useParams<{ orgId: string; teamId: string }>();
+   const pathname = usePathname();
+
+   return (
+      <div className="flex items-center gap-1">
+         {ISSUE_VIEW_TABS.map((tab) => {
+            const href = `/${orgId}/team/${teamId}/${tab.segment}`;
+            const isActive = pathname === href;
+            return (
+               <Link
+                  key={tab.segment}
+                  href={href}
+                  className={cn(
+                     'px-2.5 h-7 inline-flex items-center rounded-full border text-xs font-medium transition-colors',
+                     isActive
+                        ? 'bg-accent text-foreground border-border'
+                        : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                  )}
+               >
+                  {tab.label}
+               </Link>
+            );
+         })}
+      </div>
+   );
+}
 
 export default function HeaderNav() {
    const { isSearchOpen, toggleSearch, closeSearch, setSearchQuery, searchQuery } =
@@ -42,7 +79,10 @@ export default function HeaderNav() {
 
    return (
       <div className="w-full flex justify-between items-center border-b py-1.5 px-6 h-10">
-         <SidebarTrigger className="" />
+         <div className="flex items-center gap-3">
+            <SidebarTrigger className="" />
+            <IssueViewTabs />
+         </div>
 
          <div className="flex items-center gap-2">
             {isSearchOpen ? (
