@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { Issue } from '@/mock-data/issues';
 import { getStatusesByCategory, StatusCategory, displayOrderedStatus } from '@/mock-data/status';
 import { useFilterStore } from '@/store/filter-store';
@@ -38,13 +37,18 @@ export default function AllIssues({ categories }: AllIssuesProps) {
       [categories]
    );
 
-   const displayedIssues = useMemo(() => {
-      let result: Issue[] = applyIssueFilters(issues, filters);
-      if (categories) {
-         result = result.filter((issue) => categories.includes(issue.status.category));
-      }
-      return result;
-   }, [issues, filters, categories]);
+   const scopedIssues = useMemo<Issue[]>(
+      () =>
+         categories
+            ? issues.filter((issue) => categories.includes(issue.status.category))
+            : issues,
+      [issues, categories]
+   );
+
+   const displayedIssues = useMemo(
+      () => applyIssueFilters(scopedIssues, filters),
+      [scopedIssues, filters]
+   );
 
    if (isSearching) {
       return (
@@ -60,14 +64,10 @@ export default function AllIssues({ categories }: AllIssuesProps) {
       <div className="w-full h-full flex flex-col overflow-hidden">
          <IssueFilterBar />
          <div className="flex-1 min-h-0 w-full flex overflow-hidden">
-            <div
-               className={cn(
-                  'flex-1 min-w-0 h-full',
-                  isViewTypeGrid ? 'overflow-x-auto' : 'overflow-y-auto'
-               )}
-            >
+            <div className="flex-1 min-w-0 h-full overflow-hidden">
                <GroupedIssuesView
                   issues={displayedIssues}
+                  totalIssues={scopedIssues}
                   statuses={statuses}
                   isViewTypeGrid={isViewTypeGrid}
                />

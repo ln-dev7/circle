@@ -1,7 +1,6 @@
 'use client';
 
 import { CycleDetailsPanel } from '@/components/common/cycles/cycle-details-panel';
-import { cn } from '@/lib/utils';
 import { getCurrentCycle, getUpcomingCycle } from '@/mock-data/cycles';
 import { displayOrderedStatus } from '@/mock-data/status';
 import { useFilterStore } from '@/store/filter-store';
@@ -63,14 +62,10 @@ export default function CycleIssues({ cycleView }: CycleIssuesProps) {
       <div className="w-full h-full flex flex-col overflow-hidden">
          <IssueFilterBar />
          <div className="flex-1 min-h-0 w-full flex overflow-hidden">
-            <div
-               className={cn(
-                  'flex-1 min-w-0 h-full',
-                  isViewTypeGrid ? 'overflow-x-auto' : 'overflow-y-auto'
-               )}
-            >
+            <div className="flex-1 min-w-0 h-full overflow-hidden">
                <GroupedIssuesView
                   issues={displayedIssues}
+                  totalIssues={cycleIssues}
                   statuses={displayOrderedStatus}
                   isViewTypeGrid={isViewTypeGrid}
                />
