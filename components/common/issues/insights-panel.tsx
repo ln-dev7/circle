@@ -8,12 +8,14 @@ import {
    SelectTrigger,
    SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 import { Issue } from '@/mock-data/issues';
 import { priorities } from '@/mock-data/priorities';
 import { Status, workflowOrderedStatus } from '@/mock-data/status';
 import { useRightPanelStore } from '@/store/right-panel-store';
 import { X } from 'lucide-react';
 import { useMemo } from 'react';
+import { usePanelFilter } from './use-panel-filter';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -54,6 +56,7 @@ function StatusTick(props: { x?: number; y?: number; payload?: { value: string }
  */
 export function InsightsPanel({ issues }: InsightsPanelProps) {
    const { closePanel } = useRightPanelStore();
+   const { isActive, toggle } = usePanelFilter();
 
    const rows = useMemo<InsightsRow[]>(() => {
       return workflowOrderedStatus
@@ -196,12 +199,24 @@ export function InsightsPanel({ issues }: InsightsPanelProps) {
                <tbody>
                   {rows.map((row) => {
                      const Icon = row.status.icon;
+                     const target = { columnId: 'status' as const, value: row.status.id };
+                     const active = isActive(target);
                      return (
-                        <tr key={row.status.id} className="border-t border-border/50">
+                        <tr
+                           key={row.status.id}
+                           onClick={() => toggle(target)}
+                           className={cn(
+                              'group border-t border-border/50 cursor-pointer transition-colors hover:bg-accent/50',
+                              active && 'bg-accent hover:bg-accent'
+                           )}
+                        >
                            <td className="px-4 py-2">
                               <div className="flex items-center gap-2 whitespace-nowrap">
                                  <Icon />
                                  <span className="truncate max-w-28">{row.status.name}</span>
+                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-background/80 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                    {active ? 'Clear filter' : 'Filter'}
+                                 </span>
                               </div>
                            </td>
                            <td className="px-3 py-2 text-right font-medium">{row.total}</td>

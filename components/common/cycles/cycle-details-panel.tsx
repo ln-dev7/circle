@@ -1,8 +1,13 @@
 'use client';
 
+import {
+   PanelFilterTarget,
+   usePanelFilter,
+} from '@/components/common/issues/use-panel-filter';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import { Cycle, cycleStatusLabel, formatCycleDateRange } from '@/mock-data/cycles';
 import { Issue } from '@/mock-data/issues';
 import { useRightPanelStore } from '@/store/right-panel-store';
@@ -18,6 +23,8 @@ interface BreakdownRow {
    leading: React.ReactNode;
    total: number;
    completedPercent: number;
+   /** When set, clicking the row toggles this exclusive filter. */
+   filter?: PanelFilterTarget;
 }
 
 interface CycleDetailsPanelProps {
@@ -50,27 +57,50 @@ function buildBreakdown<T>(
       .sort((a, b) => b.total - a.total);
 }
 
-function BreakdownList({ rows }: { rows: BreakdownRow[] }) {
+interface BreakdownListProps {
+   rows: BreakdownRow[];
+   isActive: (target: PanelFilterTarget) => boolean;
+   toggle: (target: PanelFilterTarget) => void;
+}
+
+function BreakdownList({ rows, isActive, toggle }: BreakdownListProps) {
    if (rows.length === 0) {
       return <p className="text-xs text-muted-foreground px-1 py-3">Nothing to show yet.</p>;
    }
 
    return (
       <div className="flex flex-col">
-         {rows.map((row) => (
-            <div key={row.key} className="flex items-center justify-between gap-3 py-2">
-               <div className="flex items-center gap-2 min-w-0">
-                  {row.leading}
-                  <span className="text-sm truncate">{row.label}</span>
-               </div>
-               <div className="flex items-center gap-2 shrink-0 text-sm text-muted-foreground">
-                  <CapacityRing value={row.completedPercent} color="#6771c5" />
-                  <span className="whitespace-nowrap">
-                     {row.completedPercent}% of {row.total}
-                  </span>
-               </div>
-            </div>
-         ))}
+         {rows.map((row) => {
+            const active = row.filter ? isActive(row.filter) : false;
+            return (
+               <button
+                  key={row.key}
+                  type="button"
+                  onClick={row.filter ? () => toggle(row.filter!) : undefined}
+                  className={cn(
+                     'group flex w-full items-center justify-between gap-3 py-2 px-2 -mx-2 rounded-md text-left transition-colors',
+                     row.filter && 'cursor-pointer hover:bg-accent/50',
+                     active && 'bg-accent hover:bg-accent'
+                  )}
+               >
+                  <div className="flex items-center gap-2 min-w-0">
+                     {row.leading}
+                     <span className="text-sm truncate">{row.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 text-sm text-muted-foreground">
+                     {row.filter && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                           {active ? 'Clear filter' : 'Filter'}
+                        </span>
+                     )}
+                     <CapacityRing value={row.completedPercent} color="#6771c5" />
+                     <span className="whitespace-nowrap">
+                        {row.completedPercent}% of {row.total}
+                     </span>
+                  </div>
+               </button>
+            );
+         })}
       </div>
    );
 }
@@ -81,6 +111,7 @@ function BreakdownList({ rows }: { rows: BreakdownRow[] }) {
  */
 export function CycleDetailsPanel({ cycle, issues }: CycleDetailsPanelProps) {
    const { closePanel } = useRightPanelStore();
+   const { isActive, toggle } = usePanelFilter();
 
    const completedPercent = cycle.scope > 0 ? Math.round((cycle.completed / cycle.scope) * 100) : 0;
    const startedPercent = cycle.scope > 0 ? Math.round((cycle.started / cycle.scope) * 100) : 0;
@@ -101,6 +132,7 @@ export function CycleDetailsPanel({ cycle, issues }: CycleDetailsPanelProps) {
                            <User className="size-3 text-muted-foreground" />
                         </div>
                      ),
+                     filter: { columnId: 'assignee' as const, value: 'unassigned' },
                   };
                }
                return {
@@ -112,6 +144,7 @@ export function CycleDetailsPanel({ cycle, issues }: CycleDetailsPanelProps) {
                         <AvatarFallback>{assignee.name[0]}</AvatarFallback>
                      </Avatar>
                   ),
+                  filter: { columnId: 'assignee' as const, value: assignee.id },
                };
             }
          ),
@@ -136,6 +169,7 @@ export function CycleDetailsPanel({ cycle, issues }: CycleDetailsPanelProps) {
                         style={{ backgroundColor: label?.color ?? 'gray' }}
                      />
                   ),
+                  filter: { columnId: 'labels' as const, value: String(key) },
                };
             }
          ),
@@ -156,6 +190,7 @@ export function CycleDetailsPanel({ cycle, issues }: CycleDetailsPanelProps) {
                   leading: Icon ? (
                      <Icon className="size-3.5 text-muted-foreground shrink-0" />
                   ) : null,
+                  filter: { columnId: 'priority' as const, value: String(key) },
                };
             }
          ),
@@ -176,6 +211,7 @@ export function CycleDetailsPanel({ cycle, issues }: CycleDetailsPanelProps) {
                   leading: Icon ? (
                      <Icon className="size-3.5 text-muted-foreground shrink-0" />
                   ) : null,
+                  filter: { columnId: 'project' as const, value: String(key) },
                };
             }
          ),
@@ -269,16 +305,16 @@ export function CycleDetailsPanel({ cycle, issues }: CycleDetailsPanelProps) {
                   </TabsTrigger>
                </TabsList>
                <TabsContent value="assignees">
-                  <BreakdownList rows={assigneeRows} />
+                  <BreakdownList rows={assigneeRows} isActive={isActive} toggle={toggle} />
                </TabsContent>
                <TabsContent value="labels">
-                  <BreakdownList rows={labelRows} />
+                  <BreakdownList rows={labelRows} isActive={isActive} toggle={toggle} />
                </TabsContent>
                <TabsContent value="priority">
-                  <BreakdownList rows={priorityRows} />
+                  <BreakdownList rows={priorityRows} isActive={isActive} toggle={toggle} />
                </TabsContent>
                <TabsContent value="projects">
-                  <BreakdownList rows={projectRows} />
+                  <BreakdownList rows={projectRows} isActive={isActive} toggle={toggle} />
                </TabsContent>
             </Tabs>
          </div>
