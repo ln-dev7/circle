@@ -1,7 +1,10 @@
 'use client';
 
 import { Issue } from '@/mock-data/issues';
+import { useDisplaySettingsStore } from '@/store/display-settings-store';
 import { format } from 'date-fns';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import { useEffect, useRef } from 'react';
 import { DragSourceMonitor, useDrag, useDragLayer, useDrop } from 'react-dnd';
@@ -76,6 +79,8 @@ export function CustomDragLayer() {
 
 export function IssueGrid({ issue }: IssueGridProps) {
    const ref = useRef<HTMLDivElement>(null);
+   const { orgId } = useParams<{ orgId: string }>();
+   const { displayProperties } = useDisplaySettingsStore();
 
    // Set up drag functionality.
    const [{ isDragging }, drag, preview] = useDrag(() => ({
@@ -113,23 +118,37 @@ export function IssueGrid({ issue }: IssueGridProps) {
             >
                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5">
-                     <PrioritySelector priority={issue.priority} issueId={issue.id} />
-                     <span className="text-xs text-muted-foreground font-medium">
-                        {issue.identifier}
-                     </span>
+                     {displayProperties.priority && (
+                        <PrioritySelector priority={issue.priority} issueId={issue.id} />
+                     )}
+                     {displayProperties.id && (
+                        <span className="text-xs text-muted-foreground font-medium">
+                           {issue.identifier}
+                        </span>
+                     )}
                   </div>
-                  <StatusSelector status={issue.status} issueId={issue.id} />
+                  {displayProperties.status && (
+                     <StatusSelector status={issue.status} issueId={issue.id} />
+                  )}
                </div>
-               <h3 className="text-sm font-semibold mb-3 line-clamp-2">{issue.title}</h3>
+               <Link href={`/${orgId ?? 'lndev-ui'}/issue/${issue.identifier}`}>
+                  <h3 className="text-sm font-semibold mb-3 line-clamp-2">{issue.title}</h3>
+               </Link>
                <div className="flex flex-wrap gap-1.5 mb-3 min-h-[1.5rem]">
-                  <LabelBadge label={issue.labels} />
-                  {issue.project && <ProjectBadge project={issue.project} />}
+                  {displayProperties.labels && <LabelBadge label={issue.labels} />}
+                  {displayProperties.project && issue.project && (
+                     <ProjectBadge project={issue.project} />
+                  )}
                </div>
                <div className="flex items-center justify-between mt-auto pt-2">
-                  <span className="text-xs text-muted-foreground">
-                     {format(new Date(issue.createdAt), 'MMM dd')}
-                  </span>
-                  <AssigneeUser user={issue.assignee} />
+                  {displayProperties.created ? (
+                     <span className="text-xs text-muted-foreground">
+                        {format(new Date(issue.createdAt), 'MMM dd')}
+                     </span>
+                  ) : (
+                     <span />
+                  )}
+                  {displayProperties.assignee && <AssigneeUser user={issue.assignee} />}
                </div>
             </motion.div>
          </ContextMenuTrigger>
