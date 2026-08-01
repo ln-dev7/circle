@@ -1,4 +1,6 @@
-import { create } from 'zustand';
+'use client';
+
+import { parseAsArrayOf, parseAsString, parseAsStringLiteral, useQueryStates } from 'nuqs';
 
 export type MembersSort =
    | 'name-asc'
@@ -7,6 +9,15 @@ export type MembersSort =
    | 'joined-desc' // newest first
    | 'teams-asc'
    | 'teams-desc';
+
+const SORTS: MembersSort[] = [
+   'name-asc',
+   'name-desc',
+   'joined-asc',
+   'joined-desc',
+   'teams-asc',
+   'teams-desc',
+];
 
 export interface MembersFilterState {
    filters: {
@@ -24,55 +35,33 @@ export interface MembersFilterState {
    getActiveFiltersCount: () => number;
 }
 
-export const useMembersFilterStore = create<MembersFilterState>((set, get) => ({
-   filters: {
-      role: [],
-   },
-   sort: 'name-asc',
+const parsers = {
+   role: parseAsArrayOf(parseAsString).withDefault([]),
+   sort: parseAsStringLiteral(SORTS).withDefault('name-asc'),
+};
 
-   setSort: (sort) => set({ sort }),
+/** Members page filters + sorting, URL-synced via nuqs (?role=…&sort=…). */
+export function useMembersFilterStore(): MembersFilterState {
+   const [state, setState] = useQueryStates(parsers, { history: 'replace' });
 
-   setFilter: (type, ids) =>
-      set((state) => ({
-         filters: {
-            ...state.filters,
-            [type]: ids as ('Guest' | 'Member' | 'Admin')[],
-         },
-      })),
+   const filters = { role: state.role as ('Guest' | 'Member' | 'Admin')[] };
 
-   toggleFilter: (type, id) =>
-      set((state) => {
-         const current = state.filters[type];
-         const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
-         return {
-            filters: {
-               ...state.filters,
-               [type]: next,
-            },
-         };
-      }),
+   return {
+      filters,
+      sort: state.sort,
 
-   clearFilters: () =>
-      set({
-         filters: {
-            role: [],
-         },
-      }),
+      setSort: (sort) => setState({ sort: sort === 'name-asc' ? null : sort }),
+      setFilter: (_type, ids) => setState({ role: ids.length > 0 ? ids : null }),
+      toggleFilter: (_type, id) => {
+         const next = filters.role.includes(id)
+            ? filters.role.filter((x) => x !== id)
+            : [...filters.role, id];
+         setState({ role: next.length > 0 ? next : null });
+      },
+      clearFilters: () => setState({ role: null }),
+      clearFilterType: () => setState({ role: null }),
 
-   clearFilterType: (type) =>
-      set((state) => ({
-         filters: {
-            ...state.filters,
-            [type]: [],
-         },
-      })),
-
-   hasActiveFilters: () => {
-      const { filters } = get();
-      return Object.values(filters).some((arr) => arr.length > 0);
-   },
-   getActiveFiltersCount: () => {
-      const { filters } = get();
-      return Object.values(filters).reduce((sum, arr) => sum + arr.length, 0);
-   },
-}));
+      hasActiveFilters: () => filters.role.length > 0,
+      getActiveFiltersCount: () => filters.role.length,
+   };
+}

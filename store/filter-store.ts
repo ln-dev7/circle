@@ -1,97 +1,87 @@
-import { create } from 'zustand';
+'use client';
+
+import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs';
+
+/**
+ * Issue filters, synced to the URL via nuqs (?status=…&assignee=…).
+ * The hook keeps the exact same API as the previous Zustand store so
+ * consumers (Filter dropdown, issue views) don't need to change.
+ */
+export type IssueFilterKey =
+   | 'status'
+   | 'assignee'
+   | 'priority'
+   | 'labels'
+   | 'project'
+   | 'cycle'
+   | 'statusType';
 
 export interface FilterState {
-   // Filter options
-   filters: {
-      status: string[];
-      assignee: string[];
-      priority: string[];
-      labels: string[];
-      project: string[];
-   };
+   filters: Record<IssueFilterKey, string[]>;
 
-   // Actions
-   setFilter: (
-      type: 'status' | 'assignee' | 'priority' | 'labels' | 'project',
-      ids: string[]
-   ) => void;
-   toggleFilter: (
-      type: 'status' | 'assignee' | 'priority' | 'labels' | 'project',
-      id: string
-   ) => void;
+   setFilter: (type: IssueFilterKey, ids: string[]) => void;
+   toggleFilter: (type: IssueFilterKey, id: string) => void;
    clearFilters: () => void;
-   clearFilterType: (type: 'status' | 'assignee' | 'priority' | 'labels' | 'project') => void;
+   clearFilterType: (type: IssueFilterKey) => void;
 
-   // Utility
    hasActiveFilters: () => boolean;
    getActiveFiltersCount: () => number;
 }
 
-export const useFilterStore = create<FilterState>((set, get) => ({
-   // Initial state
-   filters: {
-      status: [],
-      assignee: [],
-      priority: [],
-      labels: [],
-      project: [],
-   },
+const arrayParser = parseAsArrayOf(parseAsString).withDefault([]);
 
-   // Actions
-   setFilter: (type, ids) => {
-      set((state) => ({
-         filters: {
-            ...state.filters,
-            [type]: ids,
-         },
-      }));
-   },
+const filterParsers = {
+   status: arrayParser,
+   assignee: arrayParser,
+   priority: arrayParser,
+   labels: arrayParser,
+   project: arrayParser,
+   cycle: arrayParser,
+   statusType: arrayParser,
+};
 
-   toggleFilter: (type, id) => {
-      set((state) => {
-         const currentFilters = state.filters[type];
-         const newFilters = currentFilters.includes(id)
-            ? currentFilters.filter((item) => item !== id)
-            : [...currentFilters, id];
+export function useFilterStore(): FilterState {
+   const [filters, setFilters] = useQueryStates(filterParsers, { history: 'replace' });
 
-         return {
-            filters: {
-               ...state.filters,
-               [type]: newFilters,
-            },
-         };
+   const setFilter = (type: IssueFilterKey, ids: string[]) => {
+      setFilters({ [type]: ids.length > 0 ? ids : null });
+   };
+
+   const toggleFilter = (type: IssueFilterKey, id: string) => {
+      const current = filters[type];
+      const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
+      setFilters({ [type]: next.length > 0 ? next : null });
+   };
+
+   const clearFilters = () => {
+      setFilters({
+         status: null,
+         assignee: null,
+         priority: null,
+         labels: null,
+         project: null,
+         cycle: null,
+         statusType: null,
       });
-   },
+   };
 
-   clearFilters: () => {
-      set({
-         filters: {
-            status: [],
-            assignee: [],
-            priority: [],
-            labels: [],
-            project: [],
-         },
-      });
-   },
+   const clearFilterType = (type: IssueFilterKey) => {
+      setFilters({ [type]: null });
+   };
 
-   clearFilterType: (type) => {
-      set((state) => ({
-         filters: {
-            ...state.filters,
-            [type]: [],
-         },
-      }));
-   },
+   const hasActiveFilters = () =>
+      Object.values(filters).some((filterArray) => filterArray.length > 0);
 
-   // Utility
-   hasActiveFilters: () => {
-      const { filters } = get();
-      return Object.values(filters).some((filterArray) => filterArray.length > 0);
-   },
+   const getActiveFiltersCount = () =>
+      Object.values(filters).reduce((acc, curr) => acc + curr.length, 0);
 
-   getActiveFiltersCount: () => {
-      const { filters } = get();
-      return Object.values(filters).reduce((acc, curr) => acc + curr.length, 0);
-   },
-}));
+   return {
+      filters,
+      setFilter,
+      toggleFilter,
+      clearFilters,
+      clearFilterType,
+      hasActiveFilters,
+      getActiveFiltersCount,
+   };
+}

@@ -13,7 +13,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useIssuesStore } from '@/store/issues-store';
 import { useFilterStore } from '@/store/filter-store';
-import { status as allStatus } from '@/mock-data/status';
+import { cycles, cycleStatusLabel } from '@/mock-data/cycles';
+import { status as allStatus, StatusCategory } from '@/mock-data/status';
 import { priorities } from '@/mock-data/priorities';
 import { labels } from '@/mock-data/labels';
 import { projects } from '@/mock-data/projects';
@@ -21,7 +22,9 @@ import { users } from '@/mock-data/users';
 import {
    CheckIcon,
    ChevronRight,
+   CircleDot,
    ListFilter,
+   RefreshCcw,
    User,
    CircleCheck,
    BarChart3,
@@ -32,7 +35,23 @@ import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // Define filter types
-type FilterType = 'status' | 'assignee' | 'priority' | 'labels' | 'project';
+type FilterType =
+   | 'status'
+   | 'statusType'
+   | 'assignee'
+   | 'priority'
+   | 'labels'
+   | 'project'
+   | 'cycle';
+
+const STATUS_TYPES: { id: StatusCategory; name: string }[] = [
+   { id: 'triage', name: 'Triage' },
+   { id: 'backlog', name: 'Backlog' },
+   { id: 'unstarted', name: 'Unstarted' },
+   { id: 'started', name: 'Started' },
+   { id: 'completed', name: 'Completed' },
+   { id: 'canceled', name: 'Canceled' },
+];
 
 export function Filter() {
    const [open, setOpen] = useState<boolean>(false);
@@ -40,8 +59,15 @@ export function Filter() {
 
    const { filters, toggleFilter, clearFilters, getActiveFiltersCount } = useFilterStore();
 
-   const { filterByStatus, filterByAssignee, filterByPriority, filterByLabel, filterByProject } =
-      useIssuesStore();
+   const {
+      filterByStatus,
+      filterByAssignee,
+      filterByPriority,
+      filterByLabel,
+      filterByProject,
+      filterByCycle,
+      getAllIssues,
+   } = useIssuesStore();
 
    return (
       <Popover open={open} onOpenChange={setOpen}>
@@ -73,6 +99,23 @@ export function Filter() {
                               {filters.status.length > 0 && (
                                  <span className="text-xs text-muted-foreground mr-1">
                                     {filters.status.length}
+                                 </span>
+                              )}
+                              <ChevronRight className="size-4" />
+                           </div>
+                        </CommandItem>
+                        <CommandItem
+                           onSelect={() => setActiveFilter('statusType')}
+                           className="flex items-center justify-between cursor-pointer"
+                        >
+                           <span className="flex items-center gap-2">
+                              <CircleDot className="size-4 text-muted-foreground" />
+                              Status type
+                           </span>
+                           <div className="flex items-center">
+                              {filters.statusType.length > 0 && (
+                                 <span className="text-xs text-muted-foreground mr-1">
+                                    {filters.statusType.length}
                                  </span>
                               )}
                               <ChevronRight className="size-4" />
@@ -141,6 +184,23 @@ export function Filter() {
                               {filters.project.length > 0 && (
                                  <span className="text-xs text-muted-foreground mr-1">
                                     {filters.project.length}
+                                 </span>
+                              )}
+                              <ChevronRight className="size-4" />
+                           </div>
+                        </CommandItem>
+                        <CommandItem
+                           onSelect={() => setActiveFilter('cycle')}
+                           className="flex items-center justify-between cursor-pointer"
+                        >
+                           <span className="flex items-center gap-2">
+                              <RefreshCcw className="size-4 text-muted-foreground" />
+                              Cycle
+                           </span>
+                           <div className="flex items-center">
+                              {filters.cycle.length > 0 && (
+                                 <span className="text-xs text-muted-foreground mr-1">
+                                    {filters.cycle.length}
                                  </span>
                               )}
                               <ChevronRight className="size-4" />
@@ -373,6 +433,107 @@ export function Filter() {
                               )}
                               <span className="text-muted-foreground text-xs">
                                  {filterByProject(project.id).length}
+                              </span>
+                           </CommandItem>
+                        ))}
+                     </CommandGroup>
+                  </CommandList>
+               </Command>
+            ) : activeFilter === 'statusType' ? (
+               <Command>
+                  <div className="flex items-center border-b p-2">
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-6"
+                        onClick={() => setActiveFilter(null)}
+                     >
+                        <ChevronRight className="size-4 rotate-180" />
+                     </Button>
+                     <span className="ml-2 font-medium">Status type</span>
+                  </div>
+                  <CommandInput placeholder="Search status types..." />
+                  <CommandList>
+                     <CommandEmpty>No status type found.</CommandEmpty>
+                     <CommandGroup>
+                        {STATUS_TYPES.map((item) => (
+                           <CommandItem
+                              key={item.id}
+                              value={item.id}
+                              onSelect={() => toggleFilter('statusType', item.id)}
+                              className="flex items-center justify-between"
+                           >
+                              <div className="flex items-center gap-2">
+                                 <CircleDot className="size-4 text-muted-foreground" />
+                                 {item.name}
+                              </div>
+                              {filters.statusType.includes(item.id) && (
+                                 <CheckIcon size={16} className="ml-auto" />
+                              )}
+                              <span className="text-muted-foreground text-xs">
+                                 {
+                                    getAllIssues().filter(
+                                       (issue) => issue.status.category === item.id
+                                    ).length
+                                 }
+                              </span>
+                           </CommandItem>
+                        ))}
+                     </CommandGroup>
+                  </CommandList>
+               </Command>
+            ) : activeFilter === 'cycle' ? (
+               <Command>
+                  <div className="flex items-center border-b p-2">
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-6"
+                        onClick={() => setActiveFilter(null)}
+                     >
+                        <ChevronRight className="size-4 rotate-180" />
+                     </Button>
+                     <span className="ml-2 font-medium">Cycle</span>
+                  </div>
+                  <CommandInput placeholder="Search cycles..." />
+                  <CommandList>
+                     <CommandEmpty>No cycle found.</CommandEmpty>
+                     <CommandGroup>
+                        <CommandItem
+                           value="no-cycle"
+                           onSelect={() => toggleFilter('cycle', 'no-cycle')}
+                           className="flex items-center justify-between"
+                        >
+                           <div className="flex items-center gap-2">
+                              <RefreshCcw className="size-4 text-muted-foreground" />
+                              No cycle
+                           </div>
+                           {filters.cycle.includes('no-cycle') && (
+                              <CheckIcon size={16} className="ml-auto" />
+                           )}
+                           <span className="text-muted-foreground text-xs">
+                              {filterByCycle('').length}
+                           </span>
+                        </CommandItem>
+                        {cycles.map((cycle) => (
+                           <CommandItem
+                              key={cycle.id}
+                              value={cycle.id}
+                              onSelect={() => toggleFilter('cycle', cycle.id)}
+                              className="flex items-center justify-between"
+                           >
+                              <div className="flex items-center gap-2">
+                                 <RefreshCcw className="size-4 text-muted-foreground" />
+                                 {cycle.name}
+                                 <span className="text-[10px] text-muted-foreground">
+                                    {cycleStatusLabel[cycle.status]}
+                                 </span>
+                              </div>
+                              {filters.cycle.includes(cycle.id) && (
+                                 <CheckIcon size={16} className="ml-auto" />
+                              )}
+                              <span className="text-muted-foreground text-xs">
+                                 {filterByCycle(cycle.id).length}
                               </span>
                            </CommandItem>
                         ))}

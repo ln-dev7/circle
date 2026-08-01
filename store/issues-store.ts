@@ -12,6 +12,8 @@ interface FilterOptions {
    priority?: string[];
    labels?: string[];
    project?: string[];
+   cycle?: string[];
+   statusType?: string[];
 }
 
 interface IssuesState {
@@ -33,6 +35,7 @@ interface IssuesState {
    filterByAssignee: (userId: string | null) => Issue[];
    filterByLabel: (labelId: string) => Issue[];
    filterByProject: (projectId: string) => Issue[];
+   filterByCycle: (cycleId: string) => Issue[];
    searchIssues: (query: string) => Issue[];
    filterIssues: (filters: FilterOptions) => Issue[];
 
@@ -122,6 +125,10 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
       return get().issues.filter((issue) => issue.project?.id === projectId);
    },
 
+   filterByCycle: (cycleId: string) => {
+      return get().issues.filter((issue) => issue.cycleId === cycleId);
+   },
+
    searchIssues: (query: string) => {
       const lowerCaseQuery = query.toLowerCase();
       return get().issues.filter(
@@ -173,6 +180,23 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
       if (filters.project && filters.project.length > 0) {
          filteredIssues = filteredIssues.filter(
             (issue) => issue.project && filters.project!.includes(issue.project.id)
+         );
+      }
+
+      // Filter by cycle ('no-cycle' matches issues outside any cycle)
+      if (filters.cycle && filters.cycle.length > 0) {
+         filteredIssues = filteredIssues.filter((issue) => {
+            if (filters.cycle!.includes('no-cycle') && issue.cycleId === '') {
+               return true;
+            }
+            return filters.cycle!.includes(issue.cycleId);
+         });
+      }
+
+      // Filter by status type (status category)
+      if (filters.statusType && filters.statusType.length > 0) {
+         filteredIssues = filteredIssues.filter((issue) =>
+            filters.statusType!.includes(issue.status.category)
          );
       }
 

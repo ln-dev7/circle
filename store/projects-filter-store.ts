@@ -1,4 +1,6 @@
-import { create } from 'zustand';
+'use client';
+
+import { parseAsArrayOf, parseAsString, parseAsStringLiteral, useQueryStates } from 'nuqs';
 
 export type ProjectsSort =
    | 'title-asc'
@@ -7,6 +9,15 @@ export type ProjectsSort =
    | 'date-desc'
    | 'status-asc'
    | 'status-desc';
+
+const SORTS: ProjectsSort[] = [
+   'title-asc',
+   'title-desc',
+   'date-asc',
+   'date-desc',
+   'status-asc',
+   'status-desc',
+];
 
 export interface ProjectsFilterState {
    filters: {
@@ -25,57 +36,33 @@ export interface ProjectsFilterState {
    getActiveFiltersCount: () => number;
 }
 
-export const useProjectsFilterStore = create<ProjectsFilterState>((set, get) => ({
-   filters: {
-      health: [],
-      priority: [],
-   },
-   sort: 'title-asc',
+const parsers = {
+   health: parseAsArrayOf(parseAsString).withDefault([]),
+   priority: parseAsArrayOf(parseAsString).withDefault([]),
+   sort: parseAsStringLiteral(SORTS).withDefault('title-asc'),
+};
 
-   setSort: (sort) => set({ sort }),
+/** Projects page filters + sorting, URL-synced via nuqs (?health=…&priority=…&sort=…). */
+export function useProjectsFilterStore(): ProjectsFilterState {
+   const [state, setState] = useQueryStates(parsers, { history: 'replace' });
 
-   setFilter: (type, ids) =>
-      set((state) => ({
-         filters: {
-            ...state.filters,
-            [type]: ids,
-         },
-      })),
+   const filters = { health: state.health, priority: state.priority };
 
-   toggleFilter: (type, id) =>
-      set((state) => {
-         const current = state.filters[type];
+   return {
+      filters,
+      sort: state.sort,
+
+      setSort: (sort) => setState({ sort: sort === 'title-asc' ? null : sort }),
+      setFilter: (type, ids) => setState({ [type]: ids.length > 0 ? ids : null }),
+      toggleFilter: (type, id) => {
+         const current = filters[type];
          const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
-         return {
-            filters: {
-               ...state.filters,
-               [type]: next,
-            },
-         };
-      }),
+         setState({ [type]: next.length > 0 ? next : null });
+      },
+      clearFilters: () => setState({ health: null, priority: null }),
+      clearFilterType: (type) => setState({ [type]: null }),
 
-   clearFilters: () =>
-      set({
-         filters: {
-            health: [],
-            priority: [],
-         },
-      }),
-
-   clearFilterType: (type) =>
-      set((state) => ({
-         filters: {
-            ...state.filters,
-            [type]: [],
-         },
-      })),
-
-   hasActiveFilters: () => {
-      const { filters } = get();
-      return Object.values(filters).some((arr) => arr.length > 0);
-   },
-   getActiveFiltersCount: () => {
-      const { filters } = get();
-      return Object.values(filters).reduce((sum, arr) => sum + arr.length, 0);
-   },
-}));
+      hasActiveFilters: () => Object.values(filters).some((arr) => arr.length > 0),
+      getActiveFiltersCount: () => Object.values(filters).reduce((sum, arr) => sum + arr.length, 0),
+   };
+}

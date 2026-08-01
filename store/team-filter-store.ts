@@ -1,5 +1,7 @@
+'use client';
+
 import { Team } from '@/mock-data/teams';
-import { create } from 'zustand';
+import { parseAsArrayOf, parseAsString, parseAsStringLiteral, useQueryStates } from 'nuqs';
 
 export type TeamsSort =
    | 'name-asc'
@@ -8,6 +10,15 @@ export type TeamsSort =
    | 'members-desc'
    | 'projects-asc' //number of projects
    | 'projects-desc';
+
+const SORTS: TeamsSort[] = [
+   'name-asc',
+   'name-desc',
+   'members-asc',
+   'members-desc',
+   'projects-asc',
+   'projects-desc',
+];
 
 export interface TeamsFilterState {
    filters: {
@@ -31,69 +42,36 @@ export interface TeamsFilterState {
    getActiveFiltersCount: () => number;
 }
 
-export const useTeamsFilterStore = create<TeamsFilterState>((set, get) => ({
-   filters: {
-      membership: [],
-      identifier: [],
-   },
-   sort: 'name-asc',
+const parsers = {
+   membership: parseAsArrayOf(parseAsString).withDefault([]),
+   identifier: parseAsArrayOf(parseAsString).withDefault([]),
+   sort: parseAsStringLiteral(SORTS).withDefault('name-asc'),
+};
 
-   setSort: (sort) => set({ sort }),
-   setFilter: (type, ids) =>
-      set((state) => ({
-         filters: {
-            ...state.filters,
-            [type]: ids as 'Joined' | 'Not-Joined' | Team['id'],
-         },
-      })),
+/** Teams page filters + sorting, URL-synced via nuqs (?membership=…&identifier=…&sort=…). */
+export function useTeamsFilterStore(): TeamsFilterState {
+   const [state, setState] = useQueryStates(parsers, { history: 'replace' });
 
-   toggleFilter: (type, id) => {
-      set((state) => {
-         if (type === 'membership') {
-            const current = state.filters.membership;
-            const typedId = id as 'Joined' | 'Not-Joined';
-            const next = current.includes(typedId)
-               ? current.filter((ele) => ele !== typedId)
-               : [...current, typedId];
+   const filters = {
+      membership: state.membership as ('Joined' | 'Not-Joined')[],
+      identifier: state.identifier,
+   };
 
-            return {
-               filters: {
-                  ...state.filters,
-                  membership: next,
-               },
-            };
-         } else {
-            const current = state.filters.identifier;
-            const typedId = id as Team['id'];
-            const next = current.includes(id)
-               ? current.filter((currentId) => currentId !== typedId)
-               : [...current, typedId];
+   return {
+      filters,
+      sort: state.sort,
 
-            return {
-               filters: {
-                  ...state.filters,
-                  identifier: next,
-               },
-            };
-         }
-      });
-   },
-   clearFilters: () => set({ filters: { membership: [], identifier: [] } }),
-   clearFilterType: (type) =>
-      set((state) => {
-         return {
-            filters: {
-               ...state.filters,
-               [type]: [],
-            },
-         };
-      }),
-   hasActiveFilters: () => {
-      const { filters } = get();
-      return Object.values(filters).some((arr) => arr.length > 0);
-   },
-   getActiveFiltersCount: () => {
-      const { filters } = get();
-      return Object.values(filters).reduce((sum, arr) => sum + arr.length, 0);
-   },
-}));
+      setSort: (sort) => setState({ sort: sort === 'name-asc' ? null : sort }),
+      setFilter: (type, ids) => setState({ [type]: [ids] }),
+      toggleFilter: (type, id) => {
+         const current = filters[type] as string[];
+         const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
+         setState({ [type]: next.length > 0 ? next : null });
+      },
+      clearFilters: () => setState({ membership: null, identifier: null }),
+      clearFilterType: (type) => setState({ [type]: null }),
+
+      hasActiveFilters: () => Object.values(filters).some((arr) => arr.length > 0),
+      getActiveFiltersCount: () => Object.values(filters).reduce((sum, arr) => sum + arr.length, 0),
+   };
+}
