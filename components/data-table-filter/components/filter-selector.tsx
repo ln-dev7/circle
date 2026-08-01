@@ -280,7 +280,7 @@ function __QuickSearchFilters<TData>({
                   <div className="flex items-center gap-1.5 group">
                     <Checkbox
                       checked={checked}
-                      className="opacity-0 data-[state=checked]:opacity-100 group-data-[selected=true]:opacity-100 dark:border-ring mr-1"
+                      className="opacity-0 data-[state=checked]:opacity-100 group-data-[selected=true]:opacity-100 mr-1 border-muted-foreground/40 data-[state=checked]:border-indigo-500 data-[state=checked]:bg-indigo-500 data-[state=checked]:text-white"
                     />
                     <div className="flex items-center w-4 justify-center">
                       {v.icon &&
