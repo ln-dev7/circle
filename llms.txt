@@ -1,0 +1,39 @@
+# Circle
+
+> Linear-inspired project management UI template (issues + issue detail pages, projects, teams, cycles, inbox, documents) built with Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui, Zustand and nuqs. Pure front-end: all data is fake and lives in `mock-data/`; mutations are in-memory via Zustand stores; filters/sorting are URL state via nuqs. No backend, no auth.
+
+Key facts for coding agents:
+
+- Page pattern: every route in `app/` wraps a feature component from `components/common/` in `MainLayout` with a header from `components/layout/headers/`.
+- Domain types live WITH the fake data in `mock-data/` (Issue, Status + StatusCategory, Cycle, Project, Team, User, LabelInterface, Priority, TeamDocument, InboxItem).
+- Issue mutations only go through `store/issues-store.ts`; notifications through `store/notifications-store.ts`. Other pages read mock arrays directly.
+- Filter "stores" (`filter-store`, `members/projects/team-filter-store`) are nuqs hooks — state lives in the URL. View/display preferences (`view-store`, `display-settings-store`) are persisted Zustand stores.
+- Statuses are category-driven (`triage | backlog | unstarted | started | completed | canceled`) — the Active/Backlog/All tabs, cycle progress and insights all derive from `status.category`.
+- URLs: `/{orgId}/team/{teamId}/{all|active|backlog|cycles|cycle/active|cycle/upcoming|overview|documents|members}`, `/{orgId}/issue/{identifier}` plus `/{orgId}/{inbox|projects|teams|members|settings}`. `orgId` is hard-coded to `lndev-ui` in mock data.
+- Style: Prettier 3-space indent, Tailwind `cn()` merging, `'use client'` on store-consuming components.
+
+## Docs
+
+- [AI Guide](./AI_GUIDE.md): full architecture map, data model, feature inventory, API-integration seams and conventions
+- [README](./README.md): project intro and setup
+
+## Data & state
+
+- [mock-data/status.tsx](./mock-data/status.tsx): 13 workflow statuses, categories, SVG icon builders
+- [mock-data/issues.ts](./mock-data/issues.ts): ~90 seeded issues, LexoRank ranks, grouping/filter helpers
+- [mock-data/cycles.ts](./mock-data/cycles.ts): cycles with capacity/scope/burn-up data + helpers
+- [mock-data/issue-details.ts](./mock-data/issue-details.ts): rich issue-page content blocks, activity, relations + deterministic fallback
+- [store/issues-store.ts](./store/issues-store.ts): the only mutable issue state (CRUD + filters)
+
+## Key UI
+
+- [components/layout/main-layout.tsx](./components/layout/main-layout.tsx): app shell used by every page
+- [components/common/issues/all-issues.tsx](./components/common/issues/all-issues.tsx): grouped issue views (list/board, category tabs, insights panel)
+- [components/common/issues/cycle-issues.tsx](./components/common/issues/cycle-issues.tsx): cycle-scoped issue view with side panels
+- [components/common/issues/details/issue-details.tsx](./components/common/issues/details/issue-details.tsx): issue detail page (blocks renderer, activity, properties panel)
+- [components/layout/headers/display-options.tsx](./components/layout/headers/display-options.tsx): Linear-style Display popover (grouping, ordering, display properties)
+- [components/common/cycles/cycles.tsx](./components/common/cycles/cycles.tsx): cycles timeline with burn-up chart
+
+## Optional
+
+- [components/ui](./components/ui): vendored shadcn/ui primitives — do not hand-edit unless customizing the design system
