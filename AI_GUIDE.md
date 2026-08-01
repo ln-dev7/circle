@@ -112,7 +112,7 @@ Two flavors live side by side and expose hook-shaped APIs:
 | --- | --- | --- | --- |
 | `issues-store.ts` | Zustand | Holds the issues array + `issuesByStatus`; CRUD (`addIssue`, `updateIssue`, `deleteIssue`, `updateIssueStatus/Priority/Assignee/Project`, label add/remove); read filters (`filterByStatus/Priority/Assignee/Label/Project/Cycle`, `searchIssues`, `filterIssues` — supports status/assignee/priority/labels/project/cycle/statusType) | ✅ the main mutable store |
 | `notifications-store.ts` | Zustand | Inbox items, selection, read/unread | ✅ |
-| `filter-store.ts` | **nuqs** | Issue filters in the URL (`?status=…&assignee=…&cycle=…&statusType=…`) | URL state |
+| `filter-store.ts` | **nuqs** | Issue filters in the URL under a single `?filters=` param — the state is bazza/ui's `FiltersState` (`{ columnId, type, operator, values }[]`), so operators like *is not* / *exclude* survive in shareable URLs | URL state |
 | `projects-filter-store.ts`, `team-filter-store.ts`, `members-filter-store.ts` | **nuqs** | Per-page filters + sorting in the URL (`?sort=…`) | URL state |
 | `display-settings-store.ts` | Zustand (persisted) | Linear-style "Display" options: grouping (status/assignee/priority/project/none), ordering (priority/created/title), completed-issue visibility, show empty groups, per-row display properties (ID, status, priority, labels, project, due date, created, assignee, cycle) | UI state |
 | `view-store.ts` | Zustand (persisted) | List vs Board | UI state |
@@ -130,6 +130,13 @@ Each feature is self-contained under `components/common/<feature>` + its header 
 `components/layout/headers/<feature>`. Dependencies below are in addition to
 `components/ui/*`, `lib/utils.ts` and Tailwind.
 
+- **Filter bar** (`components/common/issues/issue-filter-bar.tsx` + `issue-filter-columns.tsx`
+  + vendored `components/data-table-filter/`) — Linear-style filter chips
+  (subject / operator / values / remove) built on [bazza/ui data-table-filter]
+  (vendored, Radix + shadcn, lint-exempted in `eslint.config.mjs`). Column configs are
+  built from mock-data via `createColumnConfigHelper<Issue>()`; `applyIssueFilters()`
+  applies a `FiltersState` to any issue list using bazza's filter functions.
+  To add a filterable field: add one entry in `issue-filter-columns.tsx`.
 - **Issues views** (`components/common/issues/`) — `all-issues.tsx` (accepts
   `categories?: StatusCategory[]` for the Active/Backlog tabs), `grouped-issues-view.tsx`
   (grouping/ordering-aware list/board + DnD), `group-issues.tsx` (generic
@@ -153,8 +160,11 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   `mock-data/cycles.ts`, recharts, the issues feature.
 - **Team Home** (`components/common/teams/team-{overview,documents,members}.tsx`
   + `components/layout/headers/team/`) — needs `mock-data/{teams,documents}`.
-- **Inbox** (`components/common/inbox/`) — resizable two-pane notifications. Needs
-  `notifications-store`, `mock-data/inbox.ts`, `react-resizable-panels`.
+- **Inbox** (`components/common/inbox/`) — resizable two-pane notifications (single-pane
+  with back navigation on mobile). Notifications reference REAL issues by identifier
+  (`InboxItem extends Issue`) and the preview pane renders the actual issue (live store
+  data + rich description + properties column). Needs `notifications-store`,
+  `mock-data/inbox.ts`, `react-resizable-panels`, the issue-details renderer.
 - **Projects / Teams / Members tables** (`components/common/{projects,teams,members}/`)
   — plain sorted/filtered tables + their filter stores.
 - **Create issue modal** (`components/layout/sidebar/create-new-issue/`) — dialog with

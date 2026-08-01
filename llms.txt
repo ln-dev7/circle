@@ -7,7 +7,7 @@ Key facts for coding agents:
 - Page pattern: every route in `app/` wraps a feature component from `components/common/` in `MainLayout` with a header from `components/layout/headers/`.
 - Domain types live WITH the fake data in `mock-data/` (Issue, Status + StatusCategory, Cycle, Project, Team, User, LabelInterface, Priority, TeamDocument, InboxItem).
 - Issue mutations only go through `store/issues-store.ts`; notifications through `store/notifications-store.ts`. Other pages read mock arrays directly.
-- Filter "stores" (`filter-store`, `members/projects/team-filter-store`) are nuqs hooks — state lives in the URL. View/display preferences (`view-store`, `display-settings-store`) are persisted Zustand stores.
+- Filter "stores" (`filter-store`, `members/projects/team-filter-store`) are nuqs hooks — state lives in the URL. Issue filters use bazza/ui's FiltersState (`?filters=` JSON, with operators) rendered by the vendored `components/data-table-filter` (Linear-style chips). View/display preferences (`view-store`, `display-settings-store`) are persisted Zustand stores.
 - Statuses are category-driven (`triage | backlog | unstarted | started | completed | canceled`) — the Active/Backlog/All tabs, cycle progress and insights all derive from `status.category`.
 - URLs: `/{orgId}/team/{teamId}/{all|active|backlog|cycles|cycle/active|cycle/upcoming|overview|documents|members}`, `/{orgId}/issue/{identifier}` plus `/{orgId}/{inbox|projects|teams|members|settings}`. `orgId` is hard-coded to `lndev-ui` in mock data.
 - Style: Prettier 3-space indent, Tailwind `cn()` merging, `'use client'` on store-consuming components.
@@ -32,6 +32,8 @@ Key facts for coding agents:
 - [components/common/issues/cycle-issues.tsx](./components/common/issues/cycle-issues.tsx): cycle-scoped issue view with side panels
 - [components/common/issues/details/issue-details.tsx](./components/common/issues/details/issue-details.tsx): issue detail page (blocks renderer, activity, properties panel)
 - [components/layout/headers/display-options.tsx](./components/layout/headers/display-options.tsx): Linear-style Display popover (grouping, ordering, display properties)
+- [components/common/issues/issue-filter-columns.tsx](./components/common/issues/issue-filter-columns.tsx): filterable columns config + applyIssueFilters (operators)
+- [components/data-table-filter](./components/data-table-filter): vendored bazza/ui filter component (chips UI, filter fns)
 - [components/common/cycles/cycles.tsx](./components/common/cycles/cycles.tsx): cycles timeline with burn-up chart
 
 ## Optional
