@@ -45,7 +45,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                <p className="text-center text-[11px] text-muted-foreground">
                   BaseUI code on{' '}
                   <Link
-                     href="https://pro.lndev.me/templates"
+                     href="https://pro.lndevui.com/templates/circle-baseui"
                      target="_blank"
                      rel="noopener noreferrer"
                      className="underline hover:text-foreground transition-colors"
