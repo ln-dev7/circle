@@ -1343,3 +1343,15 @@ export function filterIssuesByCategories(
 ): Issue[] {
    return allIssues.filter((issue) => categories.includes(issue.status.category));
 }
+
+/**
+ * Deterministic pseudo-creator for an issue (mock data has no author field).
+ * Used by the member profile "Created" tab.
+ */
+export function issueCreatorIndex(issue: Issue, memberCount: number): number {
+   let hash = 0;
+   for (let i = 0; i < issue.identifier.length; i++) {
+      hash = (hash * 31 + issue.identifier.charCodeAt(i)) >>> 0;
+   }
+   return hash % memberCount;
+}

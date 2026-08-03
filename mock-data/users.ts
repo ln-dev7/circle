@@ -7,6 +7,8 @@ export interface User {
    role: 'Member' | 'Admin' | 'Guest';
    joinedDate: string;
    teamIds: string[];
+   /** IANA timezone, used to display the member's local time. */
+   timezone: string;
 }
 
 const avatarUrl = (seed: string) => `https://api.dicebear.com/9.x/glass/svg?seed=${seed}`;
@@ -26,6 +28,7 @@ export const users: User[] = [
       status: 'online',
       role: 'Admin',
       joinedDate: '2022-01-01',
+      timezone: 'Europe/Paris',
       teamIds: ['CORE', 'PERF', 'DESIGN', 'WEB'],
    },
    {
@@ -36,6 +39,7 @@ export const users: User[] = [
       status: 'offline',
       role: 'Admin',
       joinedDate: '2023-06-04',
+      timezone: 'America/New_York',
       teamIds: ['CORE', 'PERF'],
    },
    {
@@ -46,6 +50,7 @@ export const users: User[] = [
       status: 'away',
       role: 'Member',
       joinedDate: '2023-11-01',
+      timezone: 'Europe/London',
       teamIds: ['CORE', 'DESIGN'],
    },
    {
@@ -56,6 +61,7 @@ export const users: User[] = [
       status: 'online',
       role: 'Member',
       joinedDate: '2023-03-20',
+      timezone: 'Asia/Tokyo',
       teamIds: ['CORE'],
    },
    {
@@ -66,6 +72,7 @@ export const users: User[] = [
       status: 'online',
       role: 'Member',
       joinedDate: '2023-05-15',
+      timezone: 'America/Los_Angeles',
       teamIds: ['DESIGN', 'PERF'],
    },
    {
@@ -76,6 +83,7 @@ export const users: User[] = [
       status: 'offline',
       role: 'Admin',
       joinedDate: '2022-08-22',
+      timezone: 'Europe/Berlin',
       teamIds: ['PERF'],
    },
    {
@@ -86,6 +94,7 @@ export const users: User[] = [
       status: 'away',
       role: 'Member',
       joinedDate: '2023-02-14',
+      timezone: 'America/Sao_Paulo',
       teamIds: ['CORE', 'DESIGN', 'PERF'],
    },
    {
@@ -96,6 +105,7 @@ export const users: User[] = [
       status: 'online',
       role: 'Member',
       joinedDate: '2022-11-30',
+      timezone: 'Asia/Singapore',
       teamIds: ['DESIGN'],
    },
    {
@@ -106,6 +116,7 @@ export const users: User[] = [
       status: 'offline',
       role: 'Member',
       joinedDate: '2023-07-18',
+      timezone: 'Europe/Madrid',
       teamIds: ['PERF'],
    },
    {
@@ -116,6 +127,7 @@ export const users: User[] = [
       status: 'online',
       role: 'Guest',
       joinedDate: '2022-05-09',
+      timezone: 'Africa/Douala',
       teamIds: ['DESIGN'],
    },
    {
@@ -126,6 +138,7 @@ export const users: User[] = [
       status: 'away',
       role: 'Member',
       joinedDate: '2023-09-27',
+      timezone: 'America/Chicago',
       teamIds: ['PERF', 'DESIGN'],
    },
    {
@@ -136,6 +149,7 @@ export const users: User[] = [
       status: 'online',
       role: 'Guest',
       joinedDate: '2022-04-03',
+      timezone: 'Europe/Amsterdam',
       teamIds: ['PERF'],
    },
    {
@@ -146,6 +160,7 @@ export const users: User[] = [
       status: 'offline',
       role: 'Admin',
       joinedDate: '2023-01-12',
+      timezone: 'Asia/Dubai',
       teamIds: ['DESIGN'],
    },
    {
@@ -156,6 +171,7 @@ export const users: User[] = [
       status: 'online',
       role: 'Member',
       joinedDate: '2022-10-05',
+      timezone: 'Europe/Lisbon',
       teamIds: ['DESIGN', 'PERF'],
    },
    {
@@ -166,6 +182,7 @@ export const users: User[] = [
       status: 'away',
       role: 'Guest',
       joinedDate: '2023-08-14',
+      timezone: 'America/Toronto',
       teamIds: ['PERF', 'DESIGN'],
    },
    {
@@ -176,6 +193,7 @@ export const users: User[] = [
       status: 'offline',
       role: 'Member',
       joinedDate: '2022-07-29',
+      timezone: 'Europe/Stockholm',
       teamIds: ['PERF'],
    },
    {
@@ -186,6 +204,7 @@ export const users: User[] = [
       status: 'online',
       role: 'Member',
       joinedDate: '2023-04-17',
+      timezone: 'Asia/Seoul',
       teamIds: ['DESIGN'],
    },
    {
@@ -196,6 +215,7 @@ export const users: User[] = [
       status: 'away',
       role: 'Guest',
       joinedDate: '2022-12-08',
+      timezone: 'Europe/Zurich',
       teamIds: ['DESIGN'],
    },
    {
@@ -206,6 +226,7 @@ export const users: User[] = [
       status: 'offline',
       role: 'Member',
       joinedDate: '2023-10-21',
+      timezone: 'America/Denver',
       teamIds: ['PERF'],
    },
    {
@@ -216,6 +237,7 @@ export const users: User[] = [
       status: 'online',
       role: 'Member',
       joinedDate: '2022-06-17',
+      timezone: 'Europe/Dublin',
       teamIds: ['DESIGN', 'PERF'],
    },
 ];
