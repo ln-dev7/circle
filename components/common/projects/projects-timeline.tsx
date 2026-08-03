@@ -329,13 +329,22 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
             <div style={{ width: totalWidth }} className="relative min-h-full">
                {/* Month scale */}
                <div className="sticky top-0 z-20 border-b bg-container">
-                  {/* Fallback tick when the line would overlap the project list */}
-                  {todayOffset !== null && todayOverlapsList && (
-                     <div
-                        className="absolute inset-y-0 w-px bg-violet-500 pointer-events-none z-10"
-                        style={{ left: todayOffset }}
-                     />
-                  )}
+                  {/* Today on the scale: pinned pill (sticky with the header), or a
+                      plain tick when the line would overlap the project list */}
+                  {todayOffset !== null &&
+                     (todayOverlapsList ? (
+                        <div
+                           className="absolute inset-y-0 w-px bg-violet-500 pointer-events-none z-10"
+                           style={{ left: todayOffset }}
+                        />
+                     ) : (
+                        <span
+                           className="absolute -bottom-2 -translate-x-1/2 text-[10px] font-semibold bg-violet-500 text-white rounded px-1 py-px uppercase pointer-events-none z-10"
+                           style={{ left: todayOffset }}
+                        >
+                           Today
+                        </span>
+                     ))}
                   <div className="flex">
                      {MONTHS.map((month) => (
                         <div
@@ -380,11 +389,7 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
                   <div
                      className="absolute top-7 bottom-0 w-px bg-violet-500 z-10"
                      style={{ left: todayOffset }}
-                  >
-                     <span className="absolute -top-0.5 -translate-x-1/2 text-[10px] font-semibold bg-violet-500 text-white rounded px-1 py-px uppercase">
-                        Today
-                     </span>
-                  </div>
+                  />
                )}
 
                {/* Groups */}
