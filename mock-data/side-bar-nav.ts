@@ -1,4 +1,5 @@
 import {
+   Bot,
    Inbox,
    FolderKanban,
    ContactRound,
@@ -26,6 +27,11 @@ export const inboxItems = [
       name: 'My issues',
       url: '#',
       icon: FolderKanban,
+   },
+   {
+      name: 'Agent',
+      url: '/lndev-ui/agent',
+      icon: Bot,
    },
 ];
 
