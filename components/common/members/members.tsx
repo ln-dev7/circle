@@ -43,10 +43,11 @@ export default function Members() {
    return (
       <div className="w-full">
          <div className="bg-container px-6 py-1.5 text-sm flex items-center text-muted-foreground border-b sticky top-0 z-10">
-            <div className="w-[70%] md:w-[60%] lg:w-[55%]">Name</div>
-            <div className="w-[30%] md:w-[20%] lg:w-[15%]">Status</div>
-            <div className="hidden lg:block w-[15%]">Joined</div>
-            <div className="w-[30%] hidden md:block md:w-[20%] lg:w-[15%]">Teams</div>
+            <div className="flex-1 min-w-0">Name</div>
+            <div className="w-[110px] shrink-0">Status</div>
+            <div className="hidden lg:block w-[100px] shrink-0">Joined</div>
+            <div className="hidden md:block w-[170px] shrink-0">Teams</div>
+            <div className="hidden sm:block w-[90px] shrink-0">Last seen</div>
          </div>
 
          <div className="w-full">

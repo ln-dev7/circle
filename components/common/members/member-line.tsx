@@ -1,42 +1,102 @@
+'use client';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { statusUserColors, User } from '@/mock-data/users';
-import { format } from 'date-fns';
-import { TeamsTooltip } from './teams-tooltip';
+import { cn } from '@/lib/utils';
+import { User } from '@/mock-data/users';
+import { format, parseISO } from 'date-fns';
+import { ContactRound } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 interface MemberLineProps {
    user: User;
 }
 
+/** "mason.carter" → "Mason Carter" (Linear shows display name + handle). */
+const displayNameOf = (user: User) =>
+   user.name
+      .split('.')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+
+/** Linear-style joined date: current year → "Mar 17", otherwise "Oct 2023". */
+const joinedLabel = (iso: string) => {
+   const date = parseISO(iso);
+   return date.getFullYear() === 2026 ? format(date, 'MMM d') : format(date, 'MMM yyyy');
+};
+
+const hashString = (value: string): number => {
+   let hash = 0;
+   for (let i = 0; i < value.length; i++) hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+   return hash;
+};
+
+const LAST_SEEN_DATES = ['Aug 3', 'Aug 2', 'Jul 30', 'Jul 27', 'Jul 23', 'Jun 26'];
+
 export default function MemberLine({ user }: MemberLineProps) {
+   const { orgId } = useParams<{ orgId: string }>();
+   const hash = hashString(user.id);
+
    return (
-      <div className="w-full flex items-center py-3 px-6 border-b hover:bg-sidebar/50 border-muted-foreground/5 text-sm last:border-b-0">
-         <div className="w-[70%] md:w-[60%] lg:w-[55%] flex items-center gap-2">
-            <div className="relative">
-               <Avatar className="size-8 shrink-0">
-                  <AvatarImage src={user.avatarUrl} alt={user.name} />
-                  <AvatarFallback>{user.name[0]}</AvatarFallback>
-               </Avatar>
-               <span
-                  className="border-background absolute -end-0.5 -bottom-0.5 size-2.5 rounded-full border-2"
-                  style={{ backgroundColor: statusUserColors[user.status] }}
-               >
-                  <span className="sr-only">{user.status}</span>
-               </span>
-            </div>
+      <Link
+         href={`/${orgId}/profiles/${user.id}`}
+         className="w-full flex items-center py-2.5 px-6 border-b hover:bg-sidebar/50 border-muted-foreground/5 text-sm last:border-b-0"
+      >
+         {/* Name */}
+         <div className="flex-1 min-w-0 flex items-center gap-2.5">
+            <Avatar className="size-8 shrink-0">
+               <AvatarImage src={user.avatarUrl} alt={user.name} />
+               <AvatarFallback>{user.name[0]}</AvatarFallback>
+            </Avatar>
             <div className="flex flex-col items-start overflow-hidden">
-               <span className="font-medium truncate w-full">{user.name}</span>
-               <span className="text-xs text-muted-foreground truncate w-full">{user.email}</span>
+               <span className="font-medium truncate w-full">{displayNameOf(user)}</span>
+               <span className="text-xs text-muted-foreground truncate w-full">{user.name}</span>
             </div>
          </div>
-         <div className="w-[30%] md:w-[20%] lg:w-[15%] text-xs text-muted-foreground">
-            {user.role}
+
+         {/* Status (role chip) */}
+         <div className="w-[110px] shrink-0">
+            <span
+               className={cn(
+                  'inline-flex items-center text-xs border rounded-md px-1.5 py-0.5',
+                  user.role === 'Admin'
+                     ? 'text-indigo-500 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/5'
+                     : 'text-muted-foreground'
+               )}
+            >
+               {user.role}
+            </span>
          </div>
-         <div className="hidden lg:block w-[15%] text-xs text-muted-foreground">
-            {format(new Date(user.joinedDate), 'MMM yyyy')}
+
+         {/* Joined */}
+         <div className="hidden lg:block w-[100px] shrink-0 text-xs text-muted-foreground">
+            {joinedLabel(user.joinedDate)}
          </div>
-         <div className="w-[30%] hidden md:flex md:w-[20%] lg:w-[15%] text-xs text-muted-foreground">
-            <TeamsTooltip teamIds={user.teamIds} />
+
+         {/* Teams */}
+         <div className="hidden md:flex w-[170px] shrink-0 items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+            {user.teamIds.length > 0 && (
+               <>
+                  <ContactRound className="size-3.5 shrink-0" />
+                  <span className="truncate">
+                     {user.teamIds.slice(0, 2).join(', ')}
+                     {user.teamIds.length > 2 && ` +${user.teamIds.length - 2}`}
+                  </span>
+               </>
+            )}
          </div>
-      </div>
+
+         {/* Last seen */}
+         <div className="hidden sm:flex w-[90px] shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+            {user.status === 'online' ? (
+               <>
+                  <span className="size-1.5 rounded-full bg-[#00cc66]" />
+                  Online
+               </>
+            ) : (
+               LAST_SEEN_DATES[hash % LAST_SEEN_DATES.length]
+            )}
+         </div>
+      </Link>
    );
 }
