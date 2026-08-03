@@ -12,12 +12,12 @@ import {
    CalendarPlus,
    ChevronRight,
    Compass,
-   MoreHorizontal,
    Plus,
    Slack,
    Star,
    Tag,
    UserPlus,
+   X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -97,13 +97,15 @@ export function ProjectPeekPanel({ projectId, onClose }: ProjectPeekPanelProps) 
             <span className="inline-flex size-6 bg-muted/50 items-center justify-center rounded shrink-0">
                <project.icon className="size-3.5" />
             </span>
-            <span className="font-medium truncate flex-1">{project.name}</span>
             <Link
                href={`/${orgId}/project/${project.id}/overview`}
-               className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+               className="flex-1 min-w-0 flex items-center gap-1.5 group"
                aria-label="Open project"
             >
-               <ChevronRight className="size-4" />
+               <span className="font-medium truncate group-hover:text-foreground/80 transition-colors">
+                  {project.name}
+               </span>
+               <ChevronRight className="size-4 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
             </Link>
             <button className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
                <Star className="size-4" />
@@ -113,7 +115,7 @@ export function ProjectPeekPanel({ projectId, onClose }: ProjectPeekPanelProps) 
                className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
                aria-label="Close panel"
             >
-               <MoreHorizontal className="size-4" />
+               <X className="size-4" />
             </button>
          </Card>
 
