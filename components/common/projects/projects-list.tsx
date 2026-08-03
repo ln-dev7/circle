@@ -33,12 +33,10 @@ export default function ProjectsList({ groups }: { groups: ProjectGroup[] }) {
          {groups.map((group) => (
             <div key={group.id}>
                {grouping !== 'none' && (
-                  <div className="flex items-center gap-2 px-6 h-9 text-sm font-medium bg-accent/30 border-b border-border/40 sticky top-8 z-[9]">
+                  <div className="flex items-center gap-2 px-6 h-9 text-sm font-medium bg-[color-mix(in_oklab,var(--accent)_30%,var(--container))] border-b border-border/40 sticky top-8 z-[9]">
                      {group.icon && <span>{group.icon}</span>}
                      {group.name}
-                     <span className="text-xs text-muted-foreground">
-                        {group.projects.length}
-                     </span>
+                     <span className="text-xs text-muted-foreground">{group.projects.length}</span>
                   </div>
                )}
                {group.projects.map((project) => (
