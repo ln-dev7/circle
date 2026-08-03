@@ -2,14 +2,19 @@
 
 import { CapacityRing } from '@/components/common/cycles/capacity-ring';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+   DropdownMenu,
+   DropdownMenuContent,
+   DropdownMenuItem,
+   DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { Project } from '@/mock-data/projects';
 import { useProjectsDisplayStore } from '@/store/projects-display-store';
 import { format, parseISO } from 'date-fns';
-import { ArrowLeft, ArrowRight, ChevronDown, Plus } from 'lucide-react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Plus } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ProjectPeekPanel } from './project-peek-panel';
 import { ProjectGroup } from './projects';
 
 interface ProjectsTimelineProps {
@@ -19,9 +24,20 @@ interface ProjectsTimelineProps {
 /* Wide, deterministic range (feels infinite): Jan 2020 → Dec 2032 (SSR safe). */
 const RANGE_START = Date.UTC(2020, 0, 1);
 const RANGE_END = Date.UTC(2032, 11, 31);
-const MONTH_WIDTH = 120;
 /** Width of the sticky project list column. */
 const LIST_WIDTH = 224;
+
+/** Zoom levels for the scale dropdown (month column width in px). */
+const ZOOM_LEVELS = [
+   { id: 'year', label: 'Year', shortcut: 'Y', monthWidth: 120 },
+   { id: 'quarter', label: 'Quarter', shortcut: 'Q', monthWidth: 240 },
+   { id: 'month', label: 'Month', shortcut: 'M', monthWidth: 480 },
+   { id: 'week', label: 'Week', shortcut: 'W', monthWidth: 960 },
+] as const;
+type TimelineZoom = (typeof ZOOM_LEVELS)[number]['id'];
+
+const monthWidthOf = (zoom: TimelineZoom) =>
+   ZOOM_LEVELS.find((level) => level.id === zoom)!.monthWidth;
 
 interface MonthCell {
    key: string;
@@ -49,21 +65,24 @@ for (let index = 0; ; index++) {
    });
 }
 
-const TOTAL_WIDTH = MONTHS.length * MONTH_WIDTH;
+const totalWidthOf = (monthWidth: number) => MONTHS.length * monthWidth;
 
-const offsetFor = (iso: string): number => {
+const offsetFor = (iso: string, monthWidth: number): number => {
    const time = Date.UTC(
       Number(iso.slice(0, 4)),
       Number(iso.slice(5, 7)) - 1,
       Number(iso.slice(8, 10))
    );
    const clamped = Math.min(Math.max(time, RANGE_START), RANGE_END);
-   return ((clamped - RANGE_START) / (RANGE_END - RANGE_START)) * TOTAL_WIDTH;
+   return ((clamped - RANGE_START) / (RANGE_END - RANGE_START)) * totalWidthOf(monthWidth);
 };
 
-const barBounds = (project: Project) => {
-   const left = offsetFor(project.startDate);
-   const right = Math.max(offsetFor(project.targetDate ?? project.startDate), left + 130);
+const barBounds = (project: Project, monthWidth: number) => {
+   const left = offsetFor(project.startDate, monthWidth);
+   const right = Math.max(
+      offsetFor(project.targetDate ?? project.startDate, monthWidth),
+      left + 130
+   );
    return { left, right };
 };
 
@@ -78,19 +97,25 @@ interface Viewport {
    width: number;
 }
 
-/** "← Jul 15 - Aug 28" indicator shown when a bar is outside the viewport. */
+/**
+ * "← Jul 15 - Aug 28" indicator shown when a bar is outside the viewport.
+ * Pinned with position: sticky (pure CSS) so it never drifts during fast
+ * scrolling — JS is only used to decide which side to show.
+ */
 function OutOfViewIndicator({
    project,
    viewport,
    listOffset,
+   monthWidth,
    onJump,
 }: {
    project: Project;
    viewport: Viewport;
    listOffset: number;
+   monthWidth: number;
    onJump: (contentX: number) => void;
 }) {
-   const { left, right } = barBounds(project);
+   const { left, right } = barBounds(project, monthWidth);
    const visibleLeft = viewport.left + listOffset;
    const visibleRight = viewport.left + viewport.width;
 
@@ -103,12 +128,11 @@ function OutOfViewIndicator({
       <button
          type="button"
          onClick={() => onJump(left)}
-         className="absolute top-1.5 z-[6] flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-         style={
-            isPast
-               ? { left: visibleLeft + 16 }
-               : { left: visibleRight - 16, transform: 'translateX(-100%)' }
-         }
+         className={cn(
+            'sticky z-[6] flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap pointer-events-auto',
+            !isPast && 'ml-auto'
+         )}
+         style={isPast ? { left: listOffset + 16 } : { right: 16 }}
       >
          {isPast && <ArrowLeft className="size-3.5" />}
          {label}
@@ -117,18 +141,31 @@ function OutOfViewIndicator({
    );
 }
 
-function TimelineBar({ project }: { project: Project }) {
-   const { orgId } = useParams<{ orgId: string }>();
+function TimelineBar({
+   project,
+   monthWidth,
+   selected,
+   onSelect,
+}: {
+   project: Project;
+   monthWidth: number;
+   selected: boolean;
+   onSelect: (projectId: string) => void;
+}) {
    const { displayProperties } = useProjectsDisplayStore();
-   const left = offsetFor(project.startDate);
-   const right = offsetFor(project.targetDate ?? project.startDate);
+   const left = offsetFor(project.startDate, monthWidth);
+   const right = offsetFor(project.targetDate ?? project.startDate, monthWidth);
    const width = Math.max(right - left, 130);
 
    return (
       <div className="absolute inset-0">
-         <Link
-            href={`/${orgId}/project/${project.id}/overview`}
-            className="absolute top-1 h-7 flex items-center gap-1.5 rounded-md border bg-accent/40 hover:bg-accent px-2.5 text-xs transition-colors overflow-hidden"
+         <button
+            type="button"
+            onClick={() => onSelect(project.id)}
+            className={cn(
+               'absolute top-1 h-7 flex items-center gap-1.5 rounded-md border bg-accent/40 hover:bg-accent px-2.5 text-xs transition-colors overflow-hidden',
+               selected && 'border-dashed border-violet-500 bg-accent'
+            )}
             style={{ left, width }}
          >
             <span className="truncate font-medium">{project.name}</span>
@@ -141,7 +178,7 @@ function TimelineBar({ project }: { project: Project }) {
             {displayProperties.status && (
                <span className="text-muted-foreground shrink-0">{project.percentComplete}%</span>
             )}
-         </Link>
+         </button>
       </div>
    );
 }
@@ -149,16 +186,22 @@ function TimelineBar({ project }: { project: Project }) {
 /**
  * Projects "Timeline" view (the default): month scale, grouped rows,
  * date-positioned bars and a Today marker. The left project list, week
- * numbers and bar contents follow the Display options.
+ * numbers and bar contents follow the Display options; the scale dropdown
+ * (Year / Quarter / Month / Week, with Y/Q/M/W shortcuts) changes the zoom.
  */
 export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
    const { showProjectList, showWeekNumbers, displayProperties } = useProjectsDisplayStore();
-   const [todayOffset, setTodayOffset] = useState<number | null>(null);
+   const [todayIso, setTodayIso] = useState<string | null>(null);
    const [viewport, setViewport] = useState<Viewport | null>(null);
+   const [zoom, setZoom] = useState<TimelineZoom>('year');
+   const [peekProjectId, setPeekProjectId] = useState<string | null>(null);
    const scrollRef = useRef<HTMLDivElement>(null);
    const frameRef = useRef<number | null>(null);
 
+   const monthWidth = monthWidthOf(zoom);
+   const totalWidth = totalWidthOf(monthWidth);
    const listOffset = showProjectList ? LIST_WIDTH : 0;
+   const todayOffset = todayIso !== null ? offsetFor(todayIso, monthWidth) : null;
 
    const syncViewport = useCallback(() => {
       if (!scrollRef.current) return;
@@ -174,10 +217,11 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
    }, [syncViewport]);
 
    useEffect(() => {
-      const offset = offsetFor(new Date().toISOString().slice(0, 10));
-      setTodayOffset(offset);
+      const iso = new Date().toISOString().slice(0, 10);
+      setTodayIso(iso);
       // Bring today into view on mount (a third from the left edge).
       if (scrollRef.current) {
+         const offset = offsetFor(iso, monthWidthOf('year'));
          scrollRef.current.scrollLeft = Math.max(0, offset - scrollRef.current.clientWidth / 3);
       }
       syncViewport();
@@ -185,6 +229,47 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
          if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
       };
    }, [syncViewport]);
+
+   /** Change zoom while keeping the date at the middle of the viewport anchored. */
+   const setZoomLevel = useCallback(
+      (next: TimelineZoom) => {
+         if (next === zoom) return;
+         const element = scrollRef.current;
+         setZoom(next);
+         if (element) {
+            const previousWidth = totalWidthOf(monthWidthOf(zoom));
+            const nextWidth = totalWidthOf(monthWidthOf(next));
+            const anchor = (element.scrollLeft + element.clientWidth / 2) / previousWidth;
+            requestAnimationFrame(() => {
+               element.scrollLeft = anchor * nextWidth - element.clientWidth / 2;
+               syncViewport();
+            });
+         }
+      },
+      [zoom, syncViewport]
+   );
+
+   // Y / Q / M / W keyboard shortcuts (ignored while typing).
+   useEffect(() => {
+      const onKeyDown = (event: KeyboardEvent) => {
+         if (event.metaKey || event.ctrlKey || event.altKey) return;
+         const target = event.target as HTMLElement | null;
+         if (
+            target &&
+            (target.tagName === 'INPUT' ||
+               target.tagName === 'TEXTAREA' ||
+               target.isContentEditable)
+         ) {
+            return;
+         }
+         const level = ZOOM_LEVELS.find(
+            (candidate) => candidate.shortcut.toLowerCase() === event.key.toLowerCase()
+         );
+         if (level) setZoomLevel(level.id);
+      };
+      window.addEventListener('keydown', onKeyDown);
+      return () => window.removeEventListener('keydown', onKeyDown);
+   }, [setZoomLevel]);
 
    const jumpTo = useCallback((contentX: number) => {
       scrollRef.current?.scrollTo({
@@ -204,6 +289,9 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
 
    return (
       <div className="relative w-full h-full">
+         {peekProjectId !== null && (
+            <ProjectPeekPanel projectId={peekProjectId} onClose={() => setPeekProjectId(null)} />
+         )}
          {/* Floating scale controls (Linear-style) */}
          <div className="absolute top-1 right-4 z-30 flex items-center gap-1.5">
             <button
@@ -213,24 +301,36 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
             >
                Today
             </button>
-            <button
-               type="button"
-               className="h-7 px-2.5 rounded-md border bg-container text-xs font-medium hover:bg-accent transition-colors shadow-xs inline-flex items-center gap-1"
-            >
-               Year
-               <ChevronDown className="size-3 text-muted-foreground" />
-            </button>
+            <DropdownMenu>
+               <DropdownMenuTrigger className="h-7 px-2.5 rounded-md border bg-container text-xs font-medium hover:bg-accent transition-colors shadow-xs inline-flex items-center gap-1 outline-none">
+                  {ZOOM_LEVELS.find((level) => level.id === zoom)!.label}
+                  <ChevronDown className="size-3 text-muted-foreground" />
+               </DropdownMenuTrigger>
+               <DropdownMenuContent align="end" className="w-40">
+                  {ZOOM_LEVELS.map((level) => (
+                     <DropdownMenuItem
+                        key={level.id}
+                        onClick={() => setZoomLevel(level.id)}
+                        className="flex items-center gap-2 text-sm"
+                     >
+                        <span className="flex-1">{level.label}</span>
+                        {zoom === level.id && <Check className="size-3.5" />}
+                        <span className="text-xs text-muted-foreground">{level.shortcut}</span>
+                     </DropdownMenuItem>
+                  ))}
+               </DropdownMenuContent>
+            </DropdownMenu>
          </div>
 
          <div ref={scrollRef} onScroll={handleScroll} className="w-full h-full overflow-auto">
-            <div style={{ width: TOTAL_WIDTH }} className="relative min-h-full">
+            <div style={{ width: totalWidth }} className="relative min-h-full">
                {/* Month scale */}
                <div className="sticky top-0 z-20 border-b bg-container">
                   <div className="flex">
                      {MONTHS.map((month) => (
                         <div
                            key={month.key}
-                           style={{ width: MONTH_WIDTH }}
+                           style={{ width: monthWidth }}
                            className="shrink-0 px-2 pt-1.5 pb-0.5 text-[11px] font-medium text-muted-foreground border-r border-border/40 uppercase tracking-wide"
                         >
                            {month.label}
@@ -242,7 +342,7 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
                         {MONTHS.map((month) => (
                            <div
                               key={month.key}
-                              style={{ width: MONTH_WIDTH }}
+                              style={{ width: monthWidth }}
                               className="shrink-0 px-2 pb-1 text-[10px] text-muted-foreground/70 border-r border-border/40 flex gap-2"
                            >
                               {month.weekDays.map((day) => (
@@ -259,7 +359,7 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
                   {MONTHS.map((month) => (
                      <div
                         key={month.key}
-                        style={{ width: MONTH_WIDTH }}
+                        style={{ width: monthWidth }}
                         className="shrink-0 border-r border-border/25 h-full"
                      />
                   ))}
@@ -281,7 +381,7 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
                <div className="relative z-[5] pb-8">
                   {groups.map((group) => (
                      <div key={group.id}>
-                        <div className="sticky left-0 flex items-center gap-2 px-4 h-9 text-sm font-medium bg-accent/30 border-y border-border/40 w-screen max-w-full">
+                        <div className="sticky left-0 flex items-center gap-2 px-4 h-9 text-sm font-medium bg-[color-mix(in_oklab,var(--accent)_30%,var(--container))] border-y border-border/40 w-screen max-w-full">
                            {group.icon && <span>{group.icon}</span>}
                            {group.name}
                            <span className="text-xs text-muted-foreground">
@@ -293,18 +393,19 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
                         </div>
                         <div className="py-1">
                            {group.projects.map((project) => (
-                              <div key={project.id} className="relative h-9">
-                                 <TimelineBar project={project} />
-                                 {viewport && (
-                                    <OutOfViewIndicator
-                                       project={project}
-                                       viewport={viewport}
-                                       listOffset={listOffset}
-                                       onJump={jumpTo}
-                                    />
-                                 )}
+                              <div key={project.id} className="relative h-9 flex items-center">
+                                 <TimelineBar
+                                    project={project}
+                                    monthWidth={monthWidth}
+                                    selected={peekProjectId === project.id}
+                                    onSelect={(projectId) =>
+                                       setPeekProjectId((current) =>
+                                          current === projectId ? null : projectId
+                                       )
+                                    }
+                                 />
                                  {showProjectList && (
-                                    <div className="sticky left-0 z-10 inline-flex items-center gap-1.5 w-56 px-4 h-9 bg-container/95 backdrop-blur-sm text-xs border-r border-border/40">
+                                    <div className="sticky left-0 z-10 flex items-center gap-1.5 w-56 shrink-0 px-4 h-9 bg-container/95 backdrop-blur-sm text-xs border-r border-border/40">
                                        <span className="inline-flex size-5 bg-muted/50 items-center justify-center rounded shrink-0">
                                           <project.icon className="size-3" />
                                        </span>
@@ -332,12 +433,19 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
                                                 src={project.lead.avatarUrl}
                                                 alt={project.lead.name}
                                              />
-                                             <AvatarFallback>
-                                                {project.lead.name[0]}
-                                             </AvatarFallback>
+                                             <AvatarFallback>{project.lead.name[0]}</AvatarFallback>
                                           </Avatar>
                                        )}
                                     </div>
+                                 )}
+                                 {viewport && (
+                                    <OutOfViewIndicator
+                                       project={project}
+                                       viewport={viewport}
+                                       listOffset={listOffset}
+                                       monthWidth={monthWidth}
+                                       onJump={jumpTo}
+                                    />
                                  )}
                               </div>
                            ))}
