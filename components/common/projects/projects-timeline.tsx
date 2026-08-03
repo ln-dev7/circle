@@ -42,30 +42,58 @@ const monthWidthOf = (zoom: TimelineZoom) =>
 interface MonthCell {
    key: string;
    label: string;
-   /** Week-start days of the month (Mondays), for the "Show week numbers" option. */
-   weekDays: number[];
 }
 
 const MONTHS: MonthCell[] = [];
 for (let index = 0; ; index++) {
    const date = new Date(Date.UTC(2020, index, 1));
    if (date.getTime() > RANGE_END) break;
-   const weekDays: number[] = [];
-   const daysInMonth = new Date(Date.UTC(2020, index + 1, 0)).getUTCDate();
-   for (let day = 1; day <= daysInMonth; day++) {
-      if (new Date(Date.UTC(2020, index, day)).getUTCDay() === 1) weekDays.push(day);
-   }
    MONTHS.push({
       key: date.toISOString().slice(0, 7),
       label:
          date.getUTCMonth() === 0
             ? `${date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })} ${date.getUTCFullYear()}`
             : date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
-      weekDays,
    });
 }
 
 const totalWidthOf = (monthWidth: number) => MONTHS.length * monthWidth;
+
+/* --------------------------- Scale date labels --------------------------- */
+
+const DAY_MS = 86_400_000;
+/** First Monday inside the range (Jan 6, 2020). */
+const FIRST_MONDAY = Date.UTC(2020, 0, 6);
+
+interface ScaleDate {
+   time: number;
+   /** Day of month, e.g. 17. */
+   day: number;
+   /** ISO week number, for the "Show week numbers" display option. */
+   week: number;
+}
+
+const isoWeekOf = (time: number): number => {
+   const date = new Date(time);
+   const target = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+   const dayNumber = (target.getUTCDay() + 6) % 7;
+   target.setUTCDate(target.getUTCDate() - dayNumber + 3);
+   const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
+   const firstDayNumber = (firstThursday.getUTCDay() + 6) % 7;
+   firstThursday.setUTCDate(firstThursday.getUTCDate() - firstDayNumber + 3);
+   return 1 + Math.round((target.getTime() - firstThursday.getTime()) / (7 * DAY_MS));
+};
+
+/** Every Monday of the range (weekly ticks + zoomed-in date labels). */
+const WEEKLY_DATES: ScaleDate[] = [];
+for (let time = FIRST_MONDAY; time <= RANGE_END; time += 7 * DAY_MS) {
+   WEEKLY_DATES.push({ time, day: new Date(time).getUTCDate(), week: isoWeekOf(time) });
+}
+/** Every other Monday (date labels at the Year zoom). */
+const BIWEEKLY_DATES: ScaleDate[] = WEEKLY_DATES.filter((_, index) => index % 2 === 0);
+
+const offsetForTime = (time: number, monthWidth: number): number =>
+   ((time - RANGE_START) / (RANGE_END - RANGE_START)) * totalWidthOf(monthWidth);
 
 const offsetFor = (iso: string, monthWidth: number): number => {
    const time = Date.UTC(
@@ -202,9 +230,12 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
    const totalWidth = totalWidthOf(monthWidth);
    const listOffset = showProjectList ? LIST_WIDTH : 0;
    const todayOffset = todayIso !== null ? offsetFor(todayIso, monthWidth) : null;
-   /** The line (and its pill) would sit on the sticky project list → hide it. */
+   const todayLabel = todayIso !== null ? format(parseISO(todayIso), 'MMM d').toUpperCase() : null;
+   /** The line would sit on the sticky project list → hide it (the pill stays on the scale). */
    const todayOverlapsList =
       viewport !== null && todayOffset !== null && todayOffset < viewport.left + listOffset + 28;
+   /** Date labels: every other Monday zoomed out, every Monday zoomed in. */
+   const scaleDates = zoom === 'year' ? BIWEEKLY_DATES : WEEKLY_DATES;
 
    const syncViewport = useCallback(() => {
       if (!scrollRef.current) return;
@@ -222,10 +253,13 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
    useEffect(() => {
       const iso = new Date().toISOString().slice(0, 10);
       setTodayIso(iso);
-      // Bring today into view on mount (a third from the left edge).
+      // Bring today into view on mount (a third from the left edge, but always
+      // clear of the sticky project list so the line stays visible).
       if (scrollRef.current) {
          const offset = offsetFor(iso, monthWidthOf('year'));
-         scrollRef.current.scrollLeft = Math.max(0, offset - scrollRef.current.clientWidth / 3);
+         const listWidth = useProjectsDisplayStore.getState().showProjectList ? LIST_WIDTH : 0;
+         const anchor = Math.max(scrollRef.current.clientWidth / 3, listWidth + 80);
+         scrollRef.current.scrollLeft = Math.max(0, offset - anchor);
       }
       syncViewport();
       return () => {
@@ -274,17 +308,25 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
       return () => window.removeEventListener('keydown', onKeyDown);
    }, [setZoomLevel]);
 
-   const jumpTo = useCallback((contentX: number) => {
-      scrollRef.current?.scrollTo({
-         left: Math.max(0, contentX - (scrollRef.current.clientWidth ?? 800) / 3),
-         behavior: 'smooth',
-      });
-   }, []);
+   const jumpTo = useCallback(
+      (contentX: number) => {
+         if (!scrollRef.current) return;
+         const anchor = Math.max(scrollRef.current.clientWidth / 3, listOffset + 80);
+         scrollRef.current.scrollTo({
+            left: Math.max(0, contentX - anchor),
+            behavior: 'smooth',
+         });
+      },
+      [listOffset]
+   );
 
    const scrollToToday = () => {
       if (scrollRef.current && todayOffset !== null) {
+         // Land today clear of the sticky project list, so on small screens
+         // the line never ends up hidden behind it.
+         const anchor = Math.max(scrollRef.current.clientWidth / 3, listOffset + 80);
          scrollRef.current.scrollTo({
-            left: Math.max(0, todayOffset - scrollRef.current.clientWidth / 3),
+            left: Math.max(0, todayOffset - anchor),
             behavior: 'smooth',
          });
       }
@@ -327,50 +369,54 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
 
          <div ref={scrollRef} onScroll={handleScroll} className="w-full h-full overflow-auto">
             <div style={{ width: totalWidth }} className="relative min-h-full">
-               {/* Month scale */}
-               <div className="sticky top-0 z-20 border-b bg-container">
-                  {/* Today on the scale: pinned pill (sticky with the header), or a
-                      plain tick when the line would overlap the project list */}
-                  {todayOffset !== null &&
-                     (todayOverlapsList ? (
-                        <div
-                           className="absolute inset-y-0 w-px bg-violet-500 pointer-events-none z-10"
-                           style={{ left: todayOffset }}
-                        />
-                     ) : (
-                        <span
-                           className="absolute -bottom-2 -translate-x-1/2 text-[10px] font-semibold bg-violet-500 text-white rounded px-1 py-px uppercase pointer-events-none z-10"
-                           style={{ left: todayOffset }}
-                        >
-                           Today
-                        </span>
-                     ))}
-                  <div className="flex">
+               {/* Month scale: month names, weekly ticks and date labels */}
+               <div className="sticky top-0 z-20 border-b bg-container select-none">
+                  <div className="relative flex">
                      {MONTHS.map((month) => (
                         <div
                            key={month.key}
                            style={{ width: monthWidth }}
-                           className="shrink-0 px-2 pt-1.5 pb-0.5 text-[11px] font-medium text-muted-foreground border-r border-border/40 uppercase tracking-wide"
+                           className="shrink-0 px-2 pt-1.5 pb-0.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wide whitespace-nowrap overflow-hidden"
                         >
                            {month.label}
                         </div>
                      ))}
-                  </div>
-                  {showWeekNumbers && (
-                     <div className="flex">
-                        {MONTHS.map((month) => (
-                           <div
-                              key={month.key}
-                              style={{ width: monthWidth }}
-                              className="shrink-0 px-2 pb-1 text-[10px] text-muted-foreground/70 border-r border-border/40 flex gap-2"
-                           >
-                              {month.weekDays.map((day) => (
-                                 <span key={day}>{day}</span>
-                              ))}
-                           </div>
+                     {/* Weekly tick marks */}
+                     <div className="absolute inset-x-0 bottom-0 pointer-events-none">
+                        {WEEKLY_DATES.map((date) => (
+                           <span
+                              key={date.time}
+                              className="absolute bottom-0 h-1 w-px bg-muted-foreground/30"
+                              style={{ left: offsetForTime(date.time, monthWidth) }}
+                           />
                         ))}
                      </div>
-                  )}
+                  </div>
+                  {/* Date labels (every other Monday at the Year zoom, weekly beyond) */}
+                  <div className="relative h-5">
+                     {scaleDates.map((date) => {
+                        const left = offsetForTime(date.time, monthWidth);
+                        if (todayOffset !== null && Math.abs(left - todayOffset) < 30) return null;
+                        return (
+                           <span
+                              key={date.time}
+                              className="absolute top-0 -translate-x-1/2 text-[10px] text-muted-foreground/80 whitespace-nowrap"
+                              style={{ left }}
+                           >
+                              {showWeekNumbers ? `W${date.week}` : date.day}
+                           </span>
+                        );
+                     })}
+                     {/* Today pill, pinned to the scale */}
+                     {todayOffset !== null && (
+                        <span
+                           className="absolute -top-0.5 -translate-x-1/2 text-[10px] font-semibold bg-violet-500 text-white rounded-full px-1.5 py-px uppercase whitespace-nowrap pointer-events-none z-10"
+                           style={{ left: todayOffset }}
+                        >
+                           {todayLabel}
+                        </span>
+                     )}
+                  </div>
                </div>
 
                {/* Month grid lines */}
