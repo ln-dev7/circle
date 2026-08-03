@@ -11,6 +11,8 @@ interface ProjectSidePanelProps {
    project: Project;
    detail: ProjectDetail;
    issues: Issue[];
+   /** Issues shown by the insights panel (e.g. after filters); defaults to `issues`. */
+   insightsIssues?: Issue[];
 }
 
 /**
@@ -18,7 +20,12 @@ interface ProjectSidePanelProps {
  * the header icons switch to the insights panel or collapse it entirely
  * (right-panel-store: null = properties, 'insights', 'hidden').
  */
-export function ProjectSidePanel({ project, detail, issues }: ProjectSidePanelProps) {
+export function ProjectSidePanel({
+   project,
+   detail,
+   issues,
+   insightsIssues,
+}: ProjectSidePanelProps) {
    const { openPanel } = useRightPanelStore();
 
    if (openPanel === 'hidden') return null;
@@ -26,7 +33,7 @@ export function ProjectSidePanel({ project, detail, issues }: ProjectSidePanelPr
    return (
       <aside className="hidden xl:flex w-[380px] shrink-0 border-l h-full overflow-hidden bg-container">
          {openPanel === 'insights' ? (
-            <InsightsPanel issues={issues} />
+            <InsightsPanel issues={insightsIssues ?? issues} />
          ) : (
             <ProjectPropertiesPanel project={project} detail={detail} issues={issues} />
          )}
