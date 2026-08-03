@@ -4,7 +4,7 @@ import Projects from '@/components/common/projects/projects';
 
 export default function ProjectsPage() {
    return (
-      <MainLayout header={<Header />}>
+      <MainLayout header={<Header />} headersNumber={1}>
          <Projects />
       </MainLayout>
    );

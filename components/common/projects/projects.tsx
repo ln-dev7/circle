@@ -1,76 +1,145 @@
 'use client';
 
-import { projects as allProjects } from '@/mock-data/projects';
-import ProjectLine from '@/components/common/projects/project-line';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { projects as allProjects, Project } from '@/mock-data/projects';
+import { teams } from '@/mock-data/teams';
 import { useProjectsFilterStore } from '@/store/projects-filter-store';
+import { useProjectsDisplayStore } from '@/store/projects-display-store';
+import { useRightPanelStore } from '@/store/right-panel-store';
+import { BarChart3 } from 'lucide-react';
+import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
-import { status as statusList } from '@/mock-data/status';
+import { Filter } from '@/components/layout/headers/projects/filter';
+import ProjectsBoard from './projects-board';
+import { ProjectsDisplayOptions } from './projects-display-options';
+import ProjectsInsightsPanel from './projects-insights-panel';
+import ProjectsList from './projects-list';
+import ProjectsTimeline from './projects-timeline';
+
+export interface ProjectGroup {
+   id: string;
+   name: string;
+   icon?: string;
+   projects: Project[];
+}
+
+const TABS = ['all', 'active'] as const;
+
+const TAB_ITEMS: { label: string; value: (typeof TABS)[number] }[] = [
+   { label: 'All projects', value: 'all' },
+   { label: 'Active projects', value: 'active' },
+];
+
+/** Status categories considered "active" for the Active projects tab. */
+const ACTIVE_CATEGORIES = new Set(['triage', 'backlog', 'unstarted', 'started']);
+/** Categories hidden by "Show closed projects: Hide closed". */
+const CLOSED_CATEGORIES = new Set(['completed', 'canceled']);
 
 export default function Projects() {
-   const { filters, sort } = useProjectsFilterStore();
-
-   const statusIndex = useMemo(() => {
-      const m = new Map<string, number>();
-      statusList.forEach((s, idx) => m.set(s.id, idx));
-      return m;
-   }, []);
+   const { filters } = useProjectsFilterStore();
+   const { viewTypes, grouping, ordering, closedProjects, showEmptyGroups } =
+      useProjectsDisplayStore();
+   const { openPanel, togglePanel } = useRightPanelStore();
+   const [tab, setTab] = useQueryState('tab', parseAsStringLiteral(TABS).withDefault('all'));
+   const viewType = viewTypes[tab];
 
    const displayed = useMemo(() => {
       let list = allProjects.slice();
 
-      // filters
+      if (tab === 'active') {
+         list = list.filter((project) => ACTIVE_CATEGORIES.has(project.status.category));
+      }
+      if (closedProjects === 'hide') {
+         list = list.filter((project) => !CLOSED_CATEGORIES.has(project.status.category));
+      }
       if (filters.health.length > 0) {
-         const hs = new Set(filters.health);
-         list = list.filter((p) => hs.has(p.health.id));
+         const healthSet = new Set(filters.health);
+         list = list.filter((project) => healthSet.has(project.health.id));
       }
       if (filters.priority.length > 0) {
-         const ps = new Set(filters.priority);
-         list = list.filter((p) => ps.has(p.priority.id));
+         const prioritySet = new Set(filters.priority);
+         list = list.filter((project) => prioritySet.has(project.priority.id));
       }
 
-      // sorting
-      const compare = (a: (typeof list)[number], b: (typeof list)[number]) => {
-         switch (sort) {
-            case 'title-asc':
+      const compare = (a: Project, b: Project) => {
+         switch (ordering) {
+            case 'title':
                return a.name.localeCompare(b.name);
-            case 'title-desc':
-               return b.name.localeCompare(a.name);
-            case 'date-asc':
-               return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
-            case 'date-desc':
-               return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
-            case 'status-asc': {
-               const ai = statusIndex.get(a.status.id) ?? 0;
-               const bi = statusIndex.get(b.status.id) ?? 0;
-               return ai - bi;
-            }
-            case 'status-desc': {
-               const ai = statusIndex.get(a.status.id) ?? 0;
-               const bi = statusIndex.get(b.status.id) ?? 0;
-               return bi - ai;
-            }
+            case 'target-date':
+               return (a.targetDate ?? '').localeCompare(b.targetDate ?? '');
+            case 'start-date':
             default:
-               return 0;
+               return a.startDate.localeCompare(b.startDate);
          }
       };
       return list.sort(compare);
-   }, [filters, sort, statusIndex]);
+   }, [tab, closedProjects, filters, ordering]);
+
+   const groups = useMemo<ProjectGroup[]>(() => {
+      if (grouping === 'none') {
+         return [{ id: 'all', name: 'All projects', projects: displayed }];
+      }
+      return teams
+         .map((team) => ({
+            id: team.id,
+            name: team.name,
+            icon: team.icon,
+            projects: displayed.filter((project) => project.teamId === team.id),
+         }))
+         .filter((group) => showEmptyGroups || group.projects.length > 0);
+   }, [displayed, grouping, showEmptyGroups]);
 
    return (
-      <div className="w-full">
-         <div className="bg-container px-6 py-1.5 text-sm flex items-center text-muted-foreground border-b sticky top-0 z-10">
-            <div className="w-[60%] sm:w-[70%] xl:w-[46%]">Title</div>
-            <div className="w-[20%] sm:w-[10%] xl:w-[13%] pl-2.5">Health</div>
-            <div className="hidden w-[10%] sm:block pl-2">Priority</div>
-            <div className="hidden xl:block xl:w-[13%] pl-2">Lead</div>
-            <div className="hidden xl:block xl:w-[13%] pl-2.5">Target date</div>
-            <div className="w-[20%] sm:w-[10%] pl-2">Status</div>
+      <div className="w-full h-full flex flex-col overflow-hidden">
+         {/* Tabs + view controls (Linear-style) */}
+         <div className="w-full flex justify-between items-center border-b py-1.5 px-6 h-10 shrink-0">
+            <div className="flex items-center gap-1">
+               {TAB_ITEMS.map((item) => {
+                  const isActive = tab === item.value;
+                  return (
+                     <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => void setTab(item.value === 'all' ? null : item.value)}
+                        className={cn(
+                           'px-2.5 h-7 inline-flex items-center rounded-full border text-xs font-medium transition-colors',
+                           isActive
+                              ? 'bg-accent text-foreground border-border'
+                              : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                        )}
+                     >
+                        {item.label}
+                     </button>
+                  );
+               })}
+            </div>
+            <div className="flex items-center gap-1">
+               <Filter />
+               <ProjectsDisplayOptions />
+               <Button
+                  size="xs"
+                  variant={openPanel === 'insights' ? 'secondary' : 'ghost'}
+                  onClick={() => togglePanel('insights')}
+                  aria-label="Toggle projects insights panel"
+               >
+                  <BarChart3 className="size-4" />
+               </Button>
+            </div>
          </div>
 
-         <div className="w-full">
-            {displayed.map((project) => (
-               <ProjectLine key={project.id} project={project} />
-            ))}
+         <div className="flex-1 min-h-0 w-full flex overflow-hidden">
+            <div className="flex-1 min-w-0 h-full overflow-hidden">
+               {viewType === 'timeline' && <ProjectsTimeline groups={groups} />}
+               {viewType === 'board' && <ProjectsBoard groups={groups} />}
+               {viewType === 'list' && <ProjectsList groups={groups} />}
+            </div>
+
+            {openPanel === 'insights' && (
+               <aside className="hidden lg:flex w-[360px] shrink-0 border-l h-full overflow-hidden bg-container">
+                  <ProjectsInsightsPanel projects={displayed} />
+               </aside>
+            )}
          </div>
       </div>
    );
