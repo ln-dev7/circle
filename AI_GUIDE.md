@@ -39,7 +39,11 @@ app/                          # Next.js routes (thin wrappers around components)
   page.tsx                    # Redirects to /lndev-ui/team/CORE/all
   [orgId]/                    # Fake multi-tenant segment (always "lndev-ui" in mock data)
     inbox/  projects/  teams/  members/  settings/
+    agent/                                    # Agent chat page (mock, fully client-side)
     issue/[issueId]/                          # Issue detail page (issueId = identifier, e.g. LNUI-703)
+    profiles/[memberId]/                      # Member profile (memberId = User.id, e.g. "mason")
+    project/[projectId]/
+      overview/  activity/  issues/           # Project detail tabs
     team/[teamId]/
       all/       active/      backlog/          # Issue views (tabs)
       cycle/active/  cycle/upcoming/            # Current / upcoming cycle issues
@@ -47,7 +51,8 @@ app/                          # Next.js routes (thin wrappers around components)
       overview/  documents/  members/           # Team Home tabs
 components/
   common/                     # Feature components (the real UI)
-    issues/    inbox/    projects/    teams/    members/    settings/    cycles/
+    issues/    inbox/    projects/    teams/    members/    settings/    cycles/    agent/
+    projects/details/         # Project detail tabs (overview / activity / issues) + properties panel
   layout/
     main-layout.tsx           # Sidebar + rounded content shell used by every page
     sidebar/                  # App sidebar (nav, org switcher, create-issue modal)
@@ -88,15 +93,17 @@ All domain **interfaces live next to their fake data**. Import types from these 
 | File | Types | Notable fields |
 | --- | --- | --- |
 | `mock-data/status.tsx` | `Status`, `StatusCategory` | 13 workflow statuses with SVG icon components and a `category` (`triage` \| `backlog` \| `unstarted` \| `started` \| `completed` \| `canceled`). Also exports `workflowOrderedStatus`, `displayOrderedStatus`, `getStatusesByCategory()`, `StatusIcon`, and reusable icon builders (`StatusPieIcon`, `StatusGearIcon`, …). ⚠️ The first six entries keep historical array indexes — `inbox.ts` and `projects.ts` reference `status[0..5]`. |
-| `mock-data/issues.ts` | `Issue` | Generated from a compact `seeds` array (~90 issues). `cycleId` links to a cycle ('' = no cycle). `rank` uses LexoRank. Helpers: `groupIssuesByStatus`, `sortIssuesByPriority`, `filterIssuesByCycle`, `filterIssuesByCategories`. |
+| `mock-data/issues.ts` | `Issue` | Generated from a compact `seeds` array (**291 unique issues**). `cycleId` links to a cycle ('' = no cycle). `rank` uses LexoRank. Helpers: `groupIssuesByStatus`, `sortIssuesByPriority`, `filterIssuesByCycle`, `filterIssuesByCategories`, `issueCreatorIndex` (deterministic pseudo-author for the profile "Created" tab). |
 | `mock-data/cycles.ts` | `Cycle`, `CycleStatus`, `CycleBurnupPoint` | `status` (`planned`/`upcoming`/`current`/`completed`), capacity, scope/started/completed, `burnup` chart points (deterministically generated). Helpers: `getCurrentCycle`, `getUpcomingCycle`, `getCyclesByTeam`, `formatCycleDateRange`. |
 | `mock-data/priorities.tsx` | `Priority` | 5 levels with SVG icon components |
 | `mock-data/labels.ts` | `LabelInterface` | id, name, CSS color keyword |
-| `mock-data/projects.ts` | `Project`, `Health` | percentComplete, lead (User), priority, health |
+| `mock-data/projects.ts` | `Project`, `Health` | percentComplete, startDate/`targetDate`, lead (User), priority, health (gray/green/yellow/red palette), `teamId`, `labels`, `initiative`, `healthUpdatedAgoDays`. Base entries are enriched deterministically at module load. Helpers: `getProjectById`, `getProjectsByTeam`. |
 | `mock-data/teams.ts` | `Team` | members (User[]), projects (Project[]), `joined` |
-| `mock-data/users.ts` | `User` | status (online/offline/away), role, teamIds |
+| `mock-data/users.ts` | `User` | status (online/offline/away), role, teamIds, `timezone` (IANA — powers "Local time" on member profiles) |
 | `mock-data/documents.ts` | `TeamDocument`, `DocumentFolder` | Docs grouped in folders, creator, timestamps, `pinned` |
 | `mock-data/issue-details.ts` | `IssueDetail`, `ContentBlock`, `ActivityItem`, `PrLink` | Rich issue-page content: structured description blocks (headings, lists, checklists, code, image/video placeholders, quotes, issue refs), activity events + comments, relations, PR links. ~12 handcrafted details + a **deterministic fallback generator** (`getIssueDetail(issue)`) for every other issue. |
+| `mock-data/project-details.ts` | `ProjectDetail`, `ProjectUpdate`, `ProjectMilestone`, `ProjectActivityEvent`, `ProjectResource` | Rich project-page content: summary, `ContentBlock[]` description (reuses the issue-details block types), resources, milestones, health-tagged updates and an activity feed. 3 handcrafted details + `getProjectDetail(projectId)` deterministic fallback. |
+| `mock-data/agent.ts` | `AgentExample` | Agent page mock: example prompt cards, skills list, `getAgentReply(input)` (deterministic keyword-matched canned answers) and `chatTitleFrom(input)`. |
 | `mock-data/inbox.ts` | `InboxItem`, `NotificationType` | Issue-shaped + notification fields (read, user, content) |
 | `mock-data/side-bar-nav.ts` | — | Static nav items for sidebar/settings |
 
@@ -115,14 +122,17 @@ Two flavors live side by side and expose hook-shaped APIs:
 | `filter-store.ts` | **nuqs** | Issue filters in the URL under a single `?filters=` param — the state is bazza/ui's `FiltersState` (`{ columnId, type, operator, values }[]`), so operators like *is not* / *exclude* survive in shareable URLs | URL state |
 | `projects-filter-store.ts`, `team-filter-store.ts`, `members-filter-store.ts` | **nuqs** | Per-page filters + sorting in the URL (`?sort=…`) | URL state |
 | `display-settings-store.ts` | Zustand (persisted) | Linear-style "Display" options: grouping (status/assignee/priority/project/none), ordering (priority/created/title), completed-issue visibility, show empty groups, per-row display properties (ID, status, priority, labels, project, due date, created, assignee, cycle) | UI state |
+| `project-updates-store.ts` | Zustand | Project updates posted from the Activity tab composer (merged with the mock updates from `project-details.ts` when rendering) | ✅ |
+| `agent-chat-store.ts` | Zustand | Agent conversations: multi-chat, send → canned reply streamed word-by-word via `appendToMessage`/`finishMessage` | ✅ |
 | `view-store.ts` | Zustand (persisted) | List vs Board | UI state |
 | `search-store.ts` | Zustand | Search open/query | UI state |
 | `create-issue-store.ts` | Zustand | Create-issue modal open state + default status | UI state |
 | `right-panel-store.ts` | Zustand | Right side panel on issue/cycle pages (`'insights'` \| `'cycle-details'` \| null) | UI state |
 
-⚠️ Only **issues** and **notifications** are truly mutable. The Projects, Teams and
-Members pages read directly from `mock-data/` and apply their filter stores in
-`useMemo` — there is no projects/teams/members store to mutate yet.
+⚠️ Truly mutable state: **issues**, **notifications**, **project updates** and
+**agent chats**. The Projects, Teams and Members tables read directly from
+`mock-data/` and apply their filter stores in `useMemo` — there is no
+projects/teams/members store to mutate yet.
 
 ## Feature inventory (what to grab if you only want one part)
 
@@ -137,6 +147,12 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   built from mock-data via `createColumnConfigHelper<Issue>()`; `applyIssueFilters()`
   applies a `FiltersState` to any issue list using bazza's filter functions.
   To add a filterable field: add one entry in `issue-filter-columns.tsx`.
+  The entry point is `issue-filter-trigger.tsx` (the "Filter" button in the header
+  toolbars); the chips row (`issue-filter-bar.tsx`) only renders once a filter is
+  active. `use-panel-filter.ts` powers the exclusive click-to-filter of the right-side
+  panels (one panel filter at a time, re-click clears). When filters hide issues,
+  `grouped-issues-view.tsx` shows a "hidden by filters" footer and, on the board,
+  collapses emptied columns into a "Hidden columns" section (`0 / total`).
 - **Issues views** (`components/common/issues/`) — `all-issues.tsx` (accepts
   `categories?: StatusCategory[]` for the Active/Backlog tabs), `grouped-issues-view.tsx`
   (grouping/ordering-aware list/board + DnD), `group-issues.tsx` (generic
@@ -167,14 +183,41 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   `mock-data/inbox.ts`, `react-resizable-panels`, the issue-details renderer.
 - **Projects / Teams / Members tables** (`components/common/{projects,teams,members}/`)
   — plain sorted/filtered tables + their filter stores.
+- **Member profile** (`components/common/members/member-profile.tsx` +
+  `components/layout/headers/profile/` + `app/[orgId]/profiles/[memberId]/`) —
+  Assigned/Created tabs (nuqs `?tab=`), issues grouped by status, right panel with
+  identity (email, client-computed local time from `User.timezone`, joined, teams,
+  projects) and Labels/Priority/Projects/Teams breakdowns. Member rows in the Members
+  tables link here. Needs the issues feature + `mock-data/{users,teams,projects}`.
+- **Project detail pages** (`components/common/projects/details/` +
+  `components/layout/headers/project/` + `app/[orgId]/project/[projectId]/`) —
+  `project-overview.tsx` (rich `ContentBlock` description, inline properties,
+  initiatives/labels/resources), `project-activity.tsx` (update composer with health
+  picker — **Post update actually writes** through `project-updates-store` — plus a
+  monthly timeline of updates), `project-issues.tsx` (project-scoped grouped issues),
+  `project-properties-panel.tsx` (properties, milestones, progress breakdowns by
+  assignee/label/cycle, activity feed). Needs `mock-data/project-details.ts`.
+- **Projects page** (`components/common/projects/`) — `projects.tsx` orchestrates two
+  URL-synced views (`?view=`): the **All projects** table (`project-line.tsx` — health,
+  priority, lead, target date, live issue count, status %) and the **Active projects
+  timeline** (`projects-timeline.tsx` — month scale, team groups, date-positioned bars,
+  client-only Today marker). `projects-insights-panel.tsx` adds Health/Teams/Leads
+  counters; clicking a Health row toggles the corresponding URL filter.
+- **Agent page** (`components/common/agent/agent-chat.tsx` +
+  `components/layout/headers/agent/` + `app/[orgId]/agent/`) — functional mock of a
+  workspace agent: hero screen with example cards, multi-conversation chat
+  (`agent-chat-store`), deterministic canned replies (`mock-data/agent.ts`) streamed
+  word-by-word, light markdown rendering (bold / inline code / lists). No network.
 - **Create issue modal** (`components/layout/sidebar/create-new-issue/`) — dialog with
   status/priority/assignee/project/label selectors; writes through `issues-store.addIssue`.
 - **App shell** (`components/layout/main-layout.tsx` + `sidebar/`) — everything else
   plugs into it.
 
 Routing conventions: URLs are `/{orgId}/…` with `orgId` hard-coded to `lndev-ui` in
-mock nav data, and `teamId` matching `Team.id` (e.g. `CORE`). Issue views intentionally
-show all issues regardless of `teamId` (mock simplification).
+mock nav data, and `teamId` matching `Team.id` (e.g. `CORE`). Detail pages:
+`/{orgId}/issue/{identifier}`, `/{orgId}/profiles/{userId}`,
+`/{orgId}/project/{projectId}/{overview|activity|issues}` and `/{orgId}/agent`.
+Issue views intentionally show all issues regardless of `teamId` (mock simplification).
 
 ## How to integrate a real API
 
@@ -238,6 +281,13 @@ store actions, and delete nothing else — the UI will keep working.
   `mock-data/issue-details.ts` + one case in `content-blocks.tsx` to add a block type.
 - Charts must be deterministic across SSR/CSR — never use `Math.random()`/`Date.now()`
   when generating chart data (see `generateBurnup` in `mock-data/cycles.ts`).
+- ⚠️ Never pass mock objects that contain **component functions** (`Project.icon`,
+  `Status.icon`, priority icons…) from a server `page.tsx` to a client component —
+  they don't serialize across the RSC boundary. Pass the **id** and resolve
+  client-side (`getProjectById`, `users.find`…), as the project/profile pages do.
+- Wall-clock-dependent values (member local time, "joined x years ago", the timeline
+  Today marker) are computed in `useEffect` after mount so SSR output stays
+  deterministic.
 - `next/font` fetches Geist from Google Fonts at build time — offline builds must stub
   it or set up a local font.
 - Some mock relations are intentionally loose (e.g. team issues aren't filtered by
