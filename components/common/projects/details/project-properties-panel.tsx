@@ -8,6 +8,8 @@ import { getCycleById } from '@/mock-data/cycles';
 import { ProjectDetail } from '@/mock-data/project-details';
 import { Project } from '@/mock-data/projects';
 import { teams } from '@/mock-data/teams';
+import { PanelFilterTarget, usePanelFilter } from '@/components/common/issues/use-panel-filter';
+import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { ProjectProgressChart } from './project-progress-chart';
 import { ArrowRight, Calendar, Check, Compass, Plus, Slack, Tag, UserPlus } from 'lucide-react';
@@ -29,6 +31,8 @@ interface BreakdownRow {
    leading: React.ReactNode;
    total: number;
    completedPercent: number;
+   /** Click-to-filter target (exclusive, like the insights panel rows). */
+   target?: PanelFilterTarget;
 }
 
 function buildRows<T>(
@@ -51,26 +55,44 @@ function buildRows<T>(
       .sort((a, b) => b.total - a.total);
 }
 
-function BreakdownList({ rows }: { rows: BreakdownRow[] }) {
+function BreakdownList({
+   rows,
+   panelFilter,
+}: {
+   rows: BreakdownRow[];
+   panelFilter: ReturnType<typeof usePanelFilter>;
+}) {
    if (rows.length === 0) {
       return <p className="text-xs text-muted-foreground px-1 py-3">Nothing to show yet.</p>;
    }
    return (
       <div className="flex flex-col">
-         {rows.map((row) => (
-            <div key={row.key} className="flex items-center justify-between gap-3 py-2">
-               <div className="flex items-center gap-2 min-w-0">
-                  {row.leading}
-                  <span className="text-sm truncate">{row.label}</span>
-               </div>
-               <div className="flex items-center gap-2 shrink-0 text-sm text-muted-foreground">
-                  <CapacityRing value={row.completedPercent} color="#6771c5" />
-                  <span className="whitespace-nowrap">
-                     {row.completedPercent}% of {row.total}
-                  </span>
-               </div>
-            </div>
-         ))}
+         {rows.map((row) => {
+            const active = row.target ? panelFilter.isActive(row.target) : false;
+            return (
+               <button
+                  key={row.key}
+                  type="button"
+                  onClick={() => row.target && panelFilter.toggle(row.target)}
+                  className={cn(
+                     'flex items-center justify-between gap-3 py-2 px-1.5 -mx-1.5 rounded-md text-left transition-colors',
+                     row.target && 'cursor-pointer hover:bg-accent/50',
+                     active && 'bg-accent hover:bg-accent'
+                  )}
+               >
+                  <div className="flex items-center gap-2 min-w-0">
+                     {row.leading}
+                     <span className="text-sm truncate">{row.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 text-sm text-muted-foreground">
+                     <CapacityRing value={row.completedPercent} color="#6771c5" />
+                     <span className="whitespace-nowrap">
+                        {row.completedPercent}% of {row.total}
+                     </span>
+                  </div>
+               </button>
+            );
+         })}
       </div>
    );
 }
@@ -89,6 +111,7 @@ function PropertyRow({ label, children }: { label: string; children: React.React
  * progress breakdowns and a compact activity feed.
  */
 export function ProjectPropertiesPanel({ project, detail, issues }: ProjectPropertiesPanelProps) {
+   const panelFilter = usePanelFilter();
    const completed = issues.filter(isCompleted).length;
 
    const team = teams.find((candidate) => candidate.id === project.teamId);
@@ -118,12 +141,21 @@ export function ProjectPropertiesPanel({ project, detail, issues }: ProjectPrope
                        label: sample.assignee.name,
                        leading: (
                           <Avatar className="size-5 shrink-0">
-                             <AvatarImage src={sample.assignee.avatarUrl} alt={sample.assignee.name} />
+                             <AvatarImage
+                                src={sample.assignee.avatarUrl}
+                                alt={sample.assignee.name}
+                             />
                              <AvatarFallback>{sample.assignee.name[0]}</AvatarFallback>
                           </Avatar>
                        ),
+                       target: { columnId: 'assignee', value: sample.assignee.id },
                     }
-                  : { key: 'no-assignee', label: 'No assignee', leading: null }
+                  : {
+                       key: 'no-assignee',
+                       label: 'No assignee',
+                       leading: null,
+                       target: { columnId: 'assignee', value: 'unassigned' },
+                    }
          ),
       [issues]
    );
@@ -142,6 +174,7 @@ export function ProjectPropertiesPanel({ project, detail, issues }: ProjectPrope
                      style={{ backgroundColor: sample.labels[0]?.color ?? 'gray' }}
                   />
                ),
+               target: { columnId: 'labels', value: String(key) },
             })
          ),
       [issues]
@@ -156,6 +189,7 @@ export function ProjectPropertiesPanel({ project, detail, issues }: ProjectPrope
                key: String(key),
                label: getCycleById(String(key))?.name ?? `Cycle ${key}`,
                leading: null,
+               target: { columnId: 'cycle', value: String(key) },
             })
          ),
       [issues]
@@ -278,7 +312,10 @@ export function ProjectPropertiesPanel({ project, detail, issues }: ProjectPrope
             ) : (
                <div className="flex flex-col gap-1.5">
                   {detail.milestones.map((milestone) => (
-                     <div key={milestone.id} className="flex items-center justify-between gap-2 text-sm">
+                     <div
+                        key={milestone.id}
+                        className="flex items-center justify-between gap-2 text-sm"
+                     >
                         <span className="flex items-center gap-2 min-w-0">
                            <span
                               className={
@@ -356,13 +393,13 @@ export function ProjectPropertiesPanel({ project, detail, issues }: ProjectPrope
                   </TabsTrigger>
                </TabsList>
                <TabsContent value="assignees">
-                  <BreakdownList rows={assigneeRows} />
+                  <BreakdownList rows={assigneeRows} panelFilter={panelFilter} />
                </TabsContent>
                <TabsContent value="labels">
-                  <BreakdownList rows={labelRows} />
+                  <BreakdownList rows={labelRows} panelFilter={panelFilter} />
                </TabsContent>
                <TabsContent value="cycles">
-                  <BreakdownList rows={cycleRows} />
+                  <BreakdownList rows={cycleRows} panelFilter={panelFilter} />
                </TabsContent>
             </Tabs>
          </div>
