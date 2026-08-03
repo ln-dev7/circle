@@ -158,7 +158,7 @@ function TimelineBar({
    const width = Math.max(right - left, 130);
 
    return (
-      <div className="absolute inset-0 z-[5]">
+      <div className="absolute inset-0">
          <button
             type="button"
             onClick={() => onSelect(project.id)}
@@ -202,6 +202,9 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
    const totalWidth = totalWidthOf(monthWidth);
    const listOffset = showProjectList ? LIST_WIDTH : 0;
    const todayOffset = todayIso !== null ? offsetFor(todayIso, monthWidth) : null;
+   /** The line (and its pill) would sit on the sticky project list → hide it. */
+   const todayOverlapsList =
+      viewport !== null && todayOffset !== null && todayOffset < viewport.left + listOffset + 28;
 
    const syncViewport = useCallback(() => {
       if (!scrollRef.current) return;
@@ -326,16 +329,12 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
             <div style={{ width: totalWidth }} className="relative min-h-full">
                {/* Month scale */}
                <div className="sticky top-0 z-20 border-b bg-container">
-                  {/* Today tick on the scale band (the line itself runs under the bars) */}
-                  {todayOffset !== null && (
+                  {/* Fallback tick when the line would overlap the project list */}
+                  {todayOffset !== null && todayOverlapsList && (
                      <div
                         className="absolute inset-y-0 w-px bg-violet-500 pointer-events-none z-10"
                         style={{ left: todayOffset }}
-                     >
-                        <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[10px] font-semibold bg-violet-500 text-white rounded px-1 py-px uppercase">
-                           Today
-                        </span>
-                     </div>
+                     />
                   )}
                   <div className="flex">
                      {MONTHS.map((month) => (
@@ -376,15 +375,20 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
                   ))}
                </div>
 
+               {/* Today marker (hidden while it overlaps the sticky project list) */}
+               {todayOffset !== null && !todayOverlapsList && (
+                  <div
+                     className="absolute top-7 bottom-0 w-px bg-violet-500 z-10"
+                     style={{ left: todayOffset }}
+                  >
+                     <span className="absolute -top-0.5 -translate-x-1/2 text-[10px] font-semibold bg-violet-500 text-white rounded px-1 py-px uppercase">
+                        Today
+                     </span>
+                  </div>
+               )}
+
                {/* Groups */}
                <div className="relative z-[5] pb-8">
-                  {/* Today line: above group headers, below the project bars */}
-                  {todayOffset !== null && (
-                     <div
-                        className="absolute inset-y-0 w-px bg-violet-500 z-[4] pointer-events-none"
-                        style={{ left: todayOffset }}
-                     />
-                  )}
                   {groups.map((group) => (
                      <div key={group.id}>
                         <div className="sticky left-0 flex items-center gap-2 px-4 h-9 text-sm font-medium bg-[color-mix(in_oklab,var(--accent)_30%,var(--container))] border-y border-border/40 w-screen max-w-full">
