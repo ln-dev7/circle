@@ -4,7 +4,7 @@ export interface User {
    avatarUrl: string;
    email: string;
    status: 'online' | 'offline' | 'away';
-   role: 'Member' | 'Admin' | 'Guest';
+   role: 'Member' | 'Admin' | 'Guest' | 'Application';
    joinedDate: string;
    teamIds: string[];
    /** IANA timezone, used to display the member's local time. */
@@ -58,7 +58,7 @@ export const users: User[] = [
       name: 'emma.jones',
       avatarUrl: avatarUrl('emmajones'),
       email: 'emmajones@gmail.com',
-      status: 'online',
+      status: 'offline',
       role: 'Member',
       joinedDate: '2023-03-20',
       timezone: 'Asia/Tokyo',
@@ -124,7 +124,7 @@ export const users: User[] = [
       name: 'amelia.kim',
       avatarUrl: avatarUrl('ameliakim'),
       email: 'ameliakim@gmail.com',
-      status: 'online',
+      status: 'offline',
       role: 'Guest',
       joinedDate: '2022-05-09',
       timezone: 'Africa/Douala',
@@ -146,7 +146,7 @@ export const users: User[] = [
       name: 'charlotte.miller',
       avatarUrl: avatarUrl('charlottemiller'),
       email: 'charlottemiller@gmail.com',
-      status: 'online',
+      status: 'offline',
       role: 'Guest',
       joinedDate: '2022-04-03',
       timezone: 'Europe/Amsterdam',
@@ -168,7 +168,7 @@ export const users: User[] = [
       name: 'mia.patel',
       avatarUrl: avatarUrl('miapatel'),
       email: 'miapatel@gmail.com',
-      status: 'online',
+      status: 'offline',
       role: 'Member',
       joinedDate: '2022-10-05',
       timezone: 'Europe/Lisbon',
@@ -201,7 +201,7 @@ export const users: User[] = [
       name: 'gabriel.nguyen',
       avatarUrl: avatarUrl('gabrielnguyen'),
       email: 'gabrielnguyen@gmail.com',
-      status: 'online',
+      status: 'offline',
       role: 'Member',
       joinedDate: '2023-04-17',
       timezone: 'Asia/Seoul',
@@ -234,10 +234,33 @@ export const users: User[] = [
       name: 'abigail.moore',
       avatarUrl: avatarUrl('abigailmoore'),
       email: 'abigailmoore@gmail.com',
-      status: 'online',
+      status: 'offline',
       role: 'Member',
       joinedDate: '2022-06-17',
       timezone: 'Europe/Dublin',
       teamIds: ['DESIGN', 'PERF'],
+   },
+   /* Workspace applications (agents), Linear-style. */
+   {
+      id: 'atlas',
+      name: 'atlas',
+      avatarUrl: `https://api.dicebear.com/9.x/bottts/svg?seed=atlasagent`,
+      email: 'atlas@lndev-ui.dev',
+      status: 'offline',
+      role: 'Application',
+      joinedDate: '2026-01-08',
+      timezone: 'UTC',
+      teamIds: [],
+   },
+   {
+      id: 'nova',
+      name: 'nova',
+      avatarUrl: `https://api.dicebear.com/9.x/bottts/svg?seed=novaagent`,
+      email: 'nova@lndev-ui.dev',
+      status: 'offline',
+      role: 'Application',
+      joinedDate: '2026-01-15',
+      timezone: 'UTC',
+      teamIds: ['CORE', 'WEB', 'PERF', 'DESIGN', 'MOBILE', 'UI'],
    },
 ];

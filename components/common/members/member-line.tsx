@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { User } from '@/mock-data/users';
 import { format, parseISO } from 'date-fns';
-import { ContactRound } from 'lucide-react';
+import { SquareUser } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
@@ -31,11 +31,11 @@ const hashString = (value: string): number => {
    return hash;
 };
 
-const LAST_SEEN_DATES = ['Aug 3', 'Aug 2', 'Jul 30', 'Jul 27', 'Jul 23', 'Jun 26'];
-
 export default function MemberLine({ user }: MemberLineProps) {
    const { orgId } = useParams<{ orgId: string }>();
-   const hash = hashString(user.id);
+   const isApplication = user.role === 'Application';
+   // Like Linear, some accounts show their e-mail as the primary line.
+   const showEmailAsName = !isApplication && hashString(user.id) % 4 === 0;
 
    return (
       <Link
@@ -49,23 +49,29 @@ export default function MemberLine({ user }: MemberLineProps) {
                <AvatarFallback>{user.name[0]}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col items-start overflow-hidden">
-               <span className="font-medium truncate w-full">{displayNameOf(user)}</span>
+               <span className="font-medium truncate w-full">
+                  {showEmailAsName ? user.email : displayNameOf(user)}
+               </span>
                <span className="text-xs text-muted-foreground truncate w-full">{user.name}</span>
             </div>
          </div>
 
-         {/* Status (role chip) */}
+         {/* Status (role) */}
          <div className="w-[110px] shrink-0">
-            <span
-               className={cn(
-                  'inline-flex items-center text-xs border rounded-md px-1.5 py-0.5',
-                  user.role === 'Admin'
-                     ? 'text-indigo-500 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/5'
-                     : 'text-muted-foreground'
-               )}
-            >
-               {user.role}
-            </span>
+            {isApplication ? (
+               <span className="text-xs text-muted-foreground">Application</span>
+            ) : (
+               <span
+                  className={cn(
+                     'inline-flex items-center text-xs border rounded-md px-1.5 py-0.5',
+                     user.role === 'Admin'
+                        ? 'text-indigo-500 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/5'
+                        : 'text-muted-foreground'
+                  )}
+               >
+                  {user.role}
+               </span>
+            )}
          </div>
 
          {/* Joined */}
@@ -77,7 +83,7 @@ export default function MemberLine({ user }: MemberLineProps) {
          <div className="hidden md:flex w-[170px] shrink-0 items-center gap-1.5 text-xs text-muted-foreground min-w-0">
             {user.teamIds.length > 0 && (
                <>
-                  <ContactRound className="size-3.5 shrink-0" />
+                  <SquareUser className="size-3.5 shrink-0" />
                   <span className="truncate">
                      {user.teamIds.slice(0, 2).join(', ')}
                      {user.teamIds.length > 2 && ` +${user.teamIds.length - 2}`}
@@ -86,15 +92,13 @@ export default function MemberLine({ user }: MemberLineProps) {
             )}
          </div>
 
-         {/* Last seen */}
+         {/* Last seen (Linear only shows currently-online members) */}
          <div className="hidden sm:flex w-[90px] shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-            {user.status === 'online' ? (
+            {user.status === 'online' && !isApplication && (
                <>
                   <span className="size-1.5 rounded-full bg-[#00cc66]" />
                   Online
                </>
-            ) : (
-               LAST_SEEN_DATES[hash % LAST_SEEN_DATES.length]
             )}
          </div>
       </Link>

@@ -15,7 +15,12 @@ import { ArrowUpDown, CheckIcon, ChevronRight, ListFilter, Shield } from 'lucide
 
 type FilterType = 'role' | 'sort';
 
-const ROLES: Array<'Guest' | 'Member' | 'Admin'> = ['Guest', 'Member', 'Admin'];
+const ROLES: Array<'Guest' | 'Member' | 'Admin' | 'Application'> = [
+   'Guest',
+   'Member',
+   'Admin',
+   'Application',
+];
 
 export function Filter() {
    const [open, setOpen] = useState(false);

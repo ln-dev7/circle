@@ -21,13 +21,13 @@ const SORTS: MembersSort[] = [
 
 export interface MembersFilterState {
    filters: {
-      role: ('Guest' | 'Member' | 'Admin')[];
+      role: ('Guest' | 'Member' | 'Admin' | 'Application')[];
    };
    sort: MembersSort;
 
    setSort: (sort: MembersSort) => void;
    setFilter: (type: 'role', ids: string[]) => void;
-   toggleFilter: (type: 'role', id: 'Guest' | 'Member' | 'Admin') => void;
+   toggleFilter: (type: 'role', id: 'Guest' | 'Member' | 'Admin' | 'Application') => void;
    clearFilters: () => void;
    clearFilterType: (type: 'role') => void;
 
@@ -44,7 +44,7 @@ const parsers = {
 export function useMembersFilterStore(): MembersFilterState {
    const [state, setState] = useQueryStates(parsers, { history: 'replace' });
 
-   const filters = { role: state.role as ('Guest' | 'Member' | 'Admin')[] };
+   const filters = { role: state.role as ('Guest' | 'Member' | 'Admin' | 'Application')[] };
 
    return {
       filters,

@@ -3,6 +3,7 @@
 import { users as allUsers } from '@/mock-data/users';
 import MemberLine from './member-line';
 import { useMembersFilterStore } from '@/store/members-filter-store';
+import { ArrowDown } from 'lucide-react';
 import { useMemo } from 'react';
 
 export default function Members() {
@@ -43,7 +44,10 @@ export default function Members() {
    return (
       <div className="w-full">
          <div className="bg-container px-6 py-1.5 text-sm flex items-center text-muted-foreground border-b sticky top-0 z-10">
-            <div className="flex-1 min-w-0">Name</div>
+            <div className="flex-1 min-w-0 flex items-center gap-1">
+               Name
+               <ArrowDown className="size-3" />
+            </div>
             <div className="w-[110px] shrink-0">Status</div>
             <div className="hidden lg:block w-[100px] shrink-0">Joined</div>
             <div className="hidden md:block w-[170px] shrink-0">Teams</div>
