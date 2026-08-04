@@ -2,6 +2,7 @@ import React from 'react';
 import { AppSidebar } from '@/components/layout/sidebar/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { CreateIssueModalProvider } from '@/components/common/issues/create-issue-modal-provider';
+import { CommandPalette } from '@/components/layout/command-palette';
 import { cn } from '@/lib/utils';
 
 interface MainLayoutProps {
@@ -34,6 +35,7 @@ export default function MainLayout({ children, header, headersNumber = 2 }: Main
    return (
       <SidebarProvider>
          <CreateIssueModalProvider />
+         <CommandPalette />
          <AppSidebar />
          <div className="h-svh overflow-hidden lg:p-2 w-full">
             <div className="lg:border lg:rounded-md overflow-hidden flex flex-col items-center justify-start bg-container h-full w-full">
