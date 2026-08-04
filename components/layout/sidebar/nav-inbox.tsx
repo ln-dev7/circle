@@ -7,6 +7,7 @@ import {
    SidebarMenuButton,
    SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { forYouReviews } from '@/mock-data/reviews';
 import { inboxItems } from '@/mock-data/side-bar-nav';
 import { useNotificationsStore } from '@/store/notifications-store';
 import {
@@ -20,6 +21,7 @@ import { useEffect, useState } from 'react';
 
 const ITEM_KEYS: Record<string, SidebarItemKey> = {
    'Inbox': 'inbox',
+   'Reviews': 'reviews',
    'My issues': 'my-issues',
    'Agent': 'agent',
 };
@@ -47,7 +49,7 @@ export function NavInbox() {
       if (!mounted) return true;
       const key = ITEM_KEYS[item.name];
       if (!key) return true;
-      const badge = key === 'inbox' ? unread : 0;
+      const badge = key === 'inbox' ? unread : key === 'reviews' ? forYouReviews.length : 0;
       return isSidebarItemVisible(visibility[key], badge);
    });
 

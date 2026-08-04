@@ -6,6 +6,7 @@ export type SidebarBadgeStyle = 'count' | 'dot';
 
 export type SidebarItemKey =
    | 'inbox'
+   | 'reviews'
    | 'my-issues'
    | 'agent'
    | 'initiatives'
@@ -28,6 +29,7 @@ interface SidebarPrefsState {
 
 const DEFAULT_VISIBILITY: Record<SidebarItemKey, SidebarVisibility> = {
    'inbox': 'always',
+   'reviews': 'always',
    'my-issues': 'always',
    'agent': 'always',
    'initiatives': 'always',
@@ -43,7 +45,7 @@ const DEFAULT_VISIBILITY: Record<SidebarItemKey, SidebarVisibility> = {
  * sidebar keeps its shape across sessions.
  */
 const DEFAULT_ORDER: Record<SidebarSection, SidebarItemKey[]> = {
-   personal: ['inbox', 'my-issues', 'agent'],
+   personal: ['inbox', 'reviews', 'my-issues', 'agent'],
    workspace: ['initiatives', 'projects', 'views', 'teams', 'members'],
 };
 

@@ -247,6 +247,21 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   Views can carry a `teamId`; the team sidebar "Views"/"Projects" entries open the
   team-scoped pages `/{orgId}/team/{teamId}/views` (same `Views` component with a
   `teamId` prop) and `/{orgId}/team/{teamId}/projects` (`teams/team-projects.tsx`).
+- **Reviews** (`components/common/reviews/` + `app/[orgId]/reviews/` +
+  `app/[orgId]/review/[reviewId]/{,review,changes}`) — Linear-style PR reviews.
+  Split view: left list panel with "For you" / "Created" tabs (grouped
+  Completed / Merged / Closed, relative times), right pane = empty state or the
+  selected review. Detail tabs are real routes: Overview (`review-overview.tsx`:
+  summary bullets with inline code, linked ticket, test plan, deployment row,
+  commit event, agent "Review results" verdict table + properties panel with
+  status/resolves/checks/files-by-category), Guide (`review-guide.tsx`:
+  narrated sections next to the relevant file diff, progress "01/02" +
+  Reviewed checkboxes), Diff (`review-diff.tsx`: Files/Commits toolbar,
+  filterable file list, stacked unified diffs). `diff-view.tsx` renders a
+  `FileDiff` (add/del/context/skip lines). Data in `mock-data/reviews.ts`:
+  13 seeded reviews whose `resolves` reference real issue identifiers;
+  `getReviewFileDiff`/`getReviewGuide` expand deterministic diffs and guide
+  sections from the seeds.
 - **Customize sidebar** (`components/layout/sidebar/customize-sidebar-dialog.tsx` +
   `store/sidebar-prefs-store.ts`) — functional modal (badge style Count/Dot, per-item
   visibility Always/On badge/Never, drag & drop reordering via the grip handles —
