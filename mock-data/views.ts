@@ -24,6 +24,8 @@ export interface View {
    /** Emoji shown as the view icon. */
    icon: string;
    type: ViewType;
+   /** Owning team; undefined = workspace-level view. */
+   teamId?: string;
    owner: User;
    createdAt: string;
    updatedAt: string;
@@ -35,6 +37,7 @@ export const views: View[] = [
    /* --------------------------------- issues -------------------------------- */
    {
       id: 'blocked-3-days',
+      teamId: 'CORE',
       name: '+ 3 days blocked issues',
       description: 'Issues that are Blocked or Paused for more than 3 days',
       icon: '🧊',
@@ -46,6 +49,7 @@ export const views: View[] = [
    },
    {
       id: 'in-progress-recent',
+      teamId: 'CORE',
       name: '+1 day in progress',
       description: 'Issues that started in the last day and are currently in progress',
       icon: '⏱️',
@@ -57,6 +61,7 @@ export const views: View[] = [
    },
    {
       id: 'stale-reviews',
+      teamId: 'DESIGN',
       name: '+3 days stale review issues',
       description: "Issues in review statuses that haven't been updated in over 3 days",
       icon: '⌛',
@@ -68,6 +73,7 @@ export const views: View[] = [
    },
    {
       id: 'discuss-backlog-review',
+      teamId: 'DESIGN',
       name: 'To discuss — backlog review',
       description: 'Topics to raise between product and engineering during backlog review',
       icon: '💬',
@@ -79,6 +85,7 @@ export const views: View[] = [
    },
    {
       id: 'ready-for-sprint',
+      teamId: 'WEB',
       name: 'Ready for next sprint',
       description: 'Groomed stories ready to be pulled into a cycle',
       icon: '⚡',
@@ -90,6 +97,7 @@ export const views: View[] = [
    },
    {
       id: 'qa-handoff',
+      teamId: 'WEB',
       name: 'QA handoff',
       description: 'Tickets sent by engineering for acceptance testing',
       icon: '🧪',
@@ -101,6 +109,7 @@ export const views: View[] = [
    },
    {
       id: 'active-bugs',
+      teamId: 'CORE',
       name: 'Active bugs',
       description: 'Active issues tagged with Bug labels',
       icon: '🐞',
@@ -112,6 +121,7 @@ export const views: View[] = [
    },
    {
       id: 'active-cycle-issues',
+      teamId: 'AI',
       name: 'Active cycle issues',
       description: 'Issues in an active cycle for specific teams',
       icon: '🔄',
@@ -123,6 +133,7 @@ export const views: View[] = [
    },
    {
       id: 'unassigned-active',
+      teamId: 'AI',
       name: 'Active issues without assignee',
       description: 'Issues in active cycles, not assigned to specific users',
       icon: '🫥',
@@ -190,6 +201,7 @@ export const views: View[] = [
    },
    {
       id: 'roadmap-core',
+      teamId: 'CORE',
       name: 'Roadmap — Core components',
       description: 'Projects accessible to the LNDev Core team',
       icon: '🛠️',
@@ -201,6 +213,7 @@ export const views: View[] = [
    },
    {
       id: 'roadmap-design',
+      teamId: 'DESIGN',
       name: 'Roadmap — Design System',
       description: 'Projects accessible to the Design System team in the Backlog status',
       icon: '🎨',
@@ -212,6 +225,7 @@ export const views: View[] = [
    },
    {
       id: 'roadmap-performance',
+      teamId: 'PERF',
       name: 'Roadmap — Performance Lab',
       description: 'Projects with target dates between July and October 2026',
       icon: '☀️',
@@ -223,6 +237,7 @@ export const views: View[] = [
    },
    {
       id: 'roadmap-web',
+      teamId: 'WEB',
       name: 'Roadmap — Web platform',
       description: 'Projects accessible to the Web Development team',
       icon: '🌐',
@@ -234,6 +249,7 @@ export const views: View[] = [
    },
    {
       id: 'roadmap-mobile',
+      teamId: 'MOBILE',
       name: 'Roadmap — Mobile (WIP)',
       description: 'Projects accessible to the Mobile team',
       icon: '📱',
@@ -247,6 +263,10 @@ export const views: View[] = [
 
 export const issueViews = views.filter((view) => view.type === 'issue');
 export const projectViews = views.filter((view) => view.type === 'project');
+
+export function getViewsByTeam(teamId: string): View[] {
+   return views.filter((view) => view.teamId === teamId);
+}
 
 export function getViewById(id: string): View | undefined {
    return views.find((view) => view.id === id);

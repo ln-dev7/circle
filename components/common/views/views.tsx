@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { issueViews, projectViews, View } from '@/mock-data/views';
+import { teams } from '@/mock-data/teams';
 import { useViewsDisplayStore, ViewsOrdering } from '@/store/views-display-store';
 import { ArrowDown, Plus, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
@@ -136,20 +137,26 @@ function ViewRow({ view, orgId }: { view: View; orgId: string }) {
    );
 }
 
-/** Workspace "Views" page: saved issue / project views. */
-export default function Views() {
+/**
+ * "Views" page: saved issue / project views. With a `teamId`, only that
+ * team's views are listed (team sidebar "Views" entry); otherwise the whole
+ * workspace is shown.
+ */
+export default function Views({ teamId }: { teamId?: string }) {
    const { orgId } = useParams<{ orgId: string }>();
    const [tab, setTab] = useQueryState('tab', parseAsStringLiteral(TABS).withDefault('issues'));
    const { ordering } = useViewsDisplayStore();
+   const team = teamId ? teams.find((entry) => entry.id === teamId) : undefined;
 
    const list = useMemo(() => {
-      const source = tab === 'issues' ? issueViews : projectViews;
+      let source = tab === 'issues' ? issueViews : projectViews;
+      if (teamId) source = source.filter((view) => view.teamId === teamId);
       return [...source].sort((a, b) => {
          if (ordering === 'created') return b.createdAt.localeCompare(a.createdAt);
          if (ordering === 'updated') return b.updatedAt.localeCompare(a.updatedAt);
          return a.name.localeCompare(b.name);
       });
-   }, [tab, ordering]);
+   }, [tab, ordering, teamId]);
 
    return (
       <div className="w-full h-full overflow-y-auto">
@@ -180,11 +187,19 @@ export default function Views() {
 
          <div className="flex items-center justify-between px-6 py-2 bg-sidebar/60 border-b border-border/50">
             <span className="flex items-center gap-2 text-sm">
-               <span className="inline-flex size-5 items-center justify-center rounded bg-primary text-primary-foreground text-[10px] font-semibold">
-                  LN
+               {team ? (
+                  <span className="inline-flex size-5 items-center justify-center rounded bg-muted/50 text-xs">
+                     {team.icon}
+                  </span>
+               ) : (
+                  <span className="inline-flex size-5 items-center justify-center rounded bg-primary text-primary-foreground text-[10px] font-semibold">
+                     LN
+                  </span>
+               )}
+               <span className="font-medium">{team ? team.name : 'LNDev UI'}</span>
+               <span className="text-muted-foreground text-xs">
+                  · {team ? 'Team' : 'Workspace'}
                </span>
-               <span className="font-medium">LNDev UI</span>
-               <span className="text-muted-foreground text-xs">· Workspace</span>
             </span>
             <Button size="xs" variant="ghost">
                <Plus className="size-3.5" />
@@ -194,6 +209,11 @@ export default function Views() {
          {list.map((view) => (
             <ViewRow key={view.id} view={view} orgId={orgId} />
          ))}
+         {list.length === 0 && (
+            <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
+               No views yet
+            </div>
+         )}
       </div>
    );
 }
