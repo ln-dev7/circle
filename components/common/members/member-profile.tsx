@@ -1,6 +1,10 @@
 'use client';
 
+import { applyIssueFilters } from '@/components/common/issues/issue-filter-columns';
 import { GroupedIssuesView } from '@/components/common/issues/grouped-issues-view';
+import { InsightsPanel } from '@/components/common/issues/insights-panel';
+import { IssueFilterBar } from '@/components/common/issues/issue-filter-bar';
+import { SearchIssues } from '@/components/common/issues/search-issues';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Issue, issueCreatorIndex } from '@/mock-data/issues';
@@ -10,7 +14,11 @@ import { projects } from '@/mock-data/projects';
 import { teams } from '@/mock-data/teams';
 import { statusUserColors, User, users } from '@/mock-data/users';
 import { displayOrderedStatus } from '@/mock-data/status';
+import { useFilterStore } from '@/store/filter-store';
 import { useIssuesStore } from '@/store/issues-store';
+import { useRightPanelStore } from '@/store/right-panel-store';
+import { useSearchStore } from '@/store/search-store';
+import { useViewStore } from '@/store/view-store';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo, useState } from 'react';
@@ -95,18 +103,30 @@ export default function MemberProfile({ member }: { member: User }) {
    const { issues } = useIssuesStore();
    const [activeTab] = useQueryState('tab', parseAsString.withDefault('assigned'));
    const { localTime, joinedAgo } = useClientTimes(member);
+   const { isSearchOpen, searchQuery } = useSearchStore();
+   const { viewType } = useViewStore();
+   const { filters } = useFilterStore();
+   const { openPanel } = useRightPanelStore();
+
+   const isSearching = isSearchOpen && searchQuery.trim() !== '';
+   const isViewTypeGrid = viewType === 'grid';
 
    const memberIndex = Math.max(
       0,
       users.findIndex((candidate) => candidate.id === member.id)
    );
 
-   const displayedIssues = useMemo(() => {
+   const scopedIssues = useMemo(() => {
       if (activeTab === 'created') {
          return issues.filter((issue) => issueCreatorIndex(issue, users.length) === memberIndex);
       }
       return issues.filter((issue) => issue.assignee?.id === member.id);
    }, [issues, activeTab, member.id, memberIndex]);
+
+   const displayedIssues = useMemo(
+      () => applyIssueFilters(scopedIssues, filters),
+      [scopedIssues, filters]
+   );
 
    const memberTeams = useMemo(
       () => teams.filter((team) => member.teamIds.includes(team.id)),
@@ -184,19 +204,38 @@ export default function MemberProfile({ member }: { member: User }) {
       [memberTeams, displayedIssues.length]
    );
 
+   if (isSearching) {
+      return (
+         <div className="w-full h-full">
+            <div className="px-6 mb-6">
+               <SearchIssues />
+            </div>
+         </div>
+      );
+   }
+
    return (
-      <div className="w-full h-full flex overflow-hidden">
+      <div className="w-full h-full flex flex-col overflow-hidden">
+         <IssueFilterBar />
+         <div className="flex-1 min-h-0 w-full flex overflow-hidden">
          {/* Issues */}
          <div className="flex-1 min-w-0 h-full overflow-hidden">
             <GroupedIssuesView
                issues={displayedIssues}
-               totalIssues={displayedIssues}
+               totalIssues={scopedIssues}
                statuses={displayOrderedStatus}
-               isViewTypeGrid={false}
+               isViewTypeGrid={isViewTypeGrid}
             />
          </div>
 
+         {openPanel === 'insights' && (
+            <aside className="hidden lg:flex w-[420px] shrink-0 border-l h-full overflow-hidden bg-container">
+               <InsightsPanel issues={displayedIssues} />
+            </aside>
+         )}
+
          {/* Profile panel */}
+         {openPanel !== 'hidden' && openPanel !== 'insights' && (
          <aside className="hidden lg:flex flex-col w-[340px] shrink-0 border-l h-full overflow-y-auto bg-container">
             <div className="px-5 pt-5 pb-4 border-b">
                <div className="flex items-center gap-3">
@@ -298,6 +337,8 @@ export default function MemberProfile({ member }: { member: User }) {
                </Tabs>
             </div>
          </aside>
+         )}
+         </div>
       </div>
    );
 }
