@@ -2,27 +2,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
 import { SelectMenu, SettingsCard, SettingsRow, SettingsSection, SettingsShell } from './shared';
-
-const THEME_LABELS: Record<string, string> = {
-   system: 'System preference',
-   light: 'Light',
-   dark: 'Dark',
-};
-const LABEL_TO_THEME: Record<string, string> = {
-   'System preference': 'system',
-   'Light': 'light',
-   'Dark': 'dark',
-};
+import { ThemePreferences } from './theme-preferences';
 
 /** Personal "Preferences" settings (general, theme, automations). */
 export default function Preferences() {
-   const { theme, setTheme } = useTheme();
-   const [mounted, setMounted] = useState(false);
-   useEffect(() => setMounted(true), []);
-
    return (
       <SettingsShell title="Preferences">
          <SettingsSection title="General">
@@ -82,33 +66,7 @@ export default function Preferences() {
                   trailing={<Switch />}
                />
             </SettingsCard>
-            <SettingsCard>
-               <SettingsRow
-                  title="Interface theme"
-                  description="Select or customize your interface color scheme"
-                  trailing={
-                     mounted ? (
-                        <SelectMenu
-                           options={['System preference', 'Light', 'Dark']}
-                           value={THEME_LABELS[theme ?? 'system']}
-                           onChange={(label) => setTheme(LABEL_TO_THEME[label])}
-                        />
-                     ) : (
-                        <SelectMenu options={['System preference', 'Light', 'Dark']} />
-                     )
-                  }
-               />
-               <SettingsRow
-                  title="Light"
-                  description="Theme to use for light system appearance"
-                  trailing={<SelectMenu options={['Light', 'Contrast']} />}
-               />
-               <SettingsRow
-                  title="Dark"
-                  description="Theme to use for dark system appearance"
-                  trailing={<SelectMenu options={['Dark', 'Midnight']} />}
-               />
-            </SettingsCard>
+            <ThemePreferences />
          </SettingsSection>
 
          <SettingsSection title="Desktop application">

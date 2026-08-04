@@ -218,6 +218,14 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   from `mock-data/issues`), `issue-templates`, `project-statuses` (project counts grouped
   by status category), `teams/[teamId]` (per-team settings incl. danger zone) and
   `teams/new`. Toggles are uncontrolled `ui/switch`; selects are local-state dropdowns.
+- **Theme system** (`store/theme-store.ts` + `components/layout/theme-applier.tsx` +
+  `components/common/settings/theme-preferences.tsx`) — Linear-style themes: next-themes
+  keeps resolving light/dark/system, the persisted store adds named variants
+  (Pure Light, Magic Blue, Classic Dark — CSS under `[data-app-theme=…]` in
+  `app/globals.css`) and a fully custom theme (accent/background/contrast per surface,
+  optional custom sidebar) whose CSS variables are generated at runtime by
+  `ThemeApplier` (mounted in `theme-provider.tsx`). Custom themes can be copied to /
+  imported from the clipboard as JSON.
 - **Create issue modal** (`components/layout/sidebar/create-new-issue/`) — dialog with
   status/priority/assignee/project/label selectors; writes through `issues-store.addIssue`.
 - **App shell** (`components/layout/main-layout.tsx` + `sidebar/`) — everything else

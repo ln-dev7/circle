@@ -149,3 +149,73 @@ input::-webkit-search-cancel-button {
 input[type='search'] {
    font-size: 16px !important;
 }
+
+/* ------------------------------------------------------------------ */
+/* Theme variants (Preferences → Interface and theme)                  */
+/* Applied via data-app-theme on <html> by components/layout/theme-applier.tsx */
+
+[data-app-theme='pure-light'] {
+   --background: #ffffff;
+   --container: #ffffff;
+   --card: #ffffff;
+   --popover: #ffffff;
+   --sidebar: #ffffff;
+   --secondary: #f4f4f5;
+   --accent: #f4f4f5;
+   --muted: #f7f7f8;
+   --border: #ececee;
+   --input: #ececee;
+   --sidebar-border: #ececee;
+   --sidebar-accent: #f4f4f5;
+}
+
+[data-app-theme='magic-blue'] {
+   --background: #1c1b2e;
+   --foreground: #eeeefc;
+   --container: #232236;
+   --card: #232236;
+   --card-foreground: #eeeefc;
+   --popover: #262541;
+   --popover-foreground: #eeeefc;
+   --secondary: #2d2c48;
+   --secondary-foreground: #eeeefc;
+   --accent: #2d2c48;
+   --accent-foreground: #eeeefc;
+   --muted: #2d2c48;
+   --muted-foreground: #9d9bc7;
+   --border: #34325a;
+   --input: #34325a;
+   --ring: #575bc7;
+   --primary: #e4e4fb;
+   --primary-foreground: #1c1b2e;
+   --sidebar: #191828;
+   --sidebar-foreground: #eeeefc;
+   --sidebar-border: #2d2c48;
+   --sidebar-accent: #2d2c48;
+   --sidebar-accent-foreground: #eeeefc;
+   --sidebar-primary: #575bc7;
+}
+
+[data-app-theme='classic-dark'] {
+   --background: #191a1f;
+   --foreground: #eef0f3;
+   --container: #1f2126;
+   --card: #1f2126;
+   --card-foreground: #eef0f3;
+   --popover: #24262c;
+   --popover-foreground: #eef0f3;
+   --secondary: #26282e;
+   --secondary-foreground: #eef0f3;
+   --accent: #26282e;
+   --accent-foreground: #eef0f3;
+   --muted: #26282e;
+   --muted-foreground: #8a8f98;
+   --border: #2c2e35;
+   --input: #2c2e35;
+   --ring: #4c4f57;
+   --sidebar: #16171b;
+   --sidebar-foreground: #eef0f3;
+   --sidebar-border: #26282e;
+   --sidebar-accent: #26282e;
+   --sidebar-accent-foreground: #eef0f3;
+}
