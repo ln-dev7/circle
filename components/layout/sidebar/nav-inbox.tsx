@@ -3,17 +3,46 @@
 import {
    SidebarGroup,
    SidebarMenu,
+   SidebarMenuBadge,
    SidebarMenuButton,
    SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import Link from 'next/link';
 import { inboxItems } from '@/mock-data/side-bar-nav';
+import { useNotificationsStore } from '@/store/notifications-store';
+import {
+   isSidebarItemVisible,
+   SidebarItemKey,
+   useSidebarPrefsStore,
+} from '@/store/sidebar-prefs-store';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+const ITEM_KEYS: Record<string, SidebarItemKey> = {
+   'Inbox': 'inbox',
+   'My issues': 'my-issues',
+   'Agent': 'agent',
+};
 
 export function NavInbox() {
+   const { visibility, badgeStyle } = useSidebarPrefsStore();
+   const { getUnreadCount } = useNotificationsStore();
+   const [mounted, setMounted] = useState(false);
+   useEffect(() => setMounted(true), []);
+
+   const unread = mounted ? getUnreadCount() : 0;
+
+   const items = inboxItems.filter((item) => {
+      if (!mounted) return true;
+      const key = ITEM_KEYS[item.name];
+      if (!key) return true;
+      const badge = key === 'inbox' ? unread : 0;
+      return isSidebarItemVisible(visibility[key], badge);
+   });
+
    return (
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
          <SidebarMenu>
-            {inboxItems.map((item) => (
+            {items.map((item) => (
                <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton asChild>
                      <Link href={item.url}>
@@ -21,6 +50,19 @@ export function NavInbox() {
                         <span>{item.name}</span>
                      </Link>
                   </SidebarMenuButton>
+                  {mounted && item.name === 'Inbox' && unread > 0 && (
+                     <SidebarMenuBadge className="text-muted-foreground">
+                        {badgeStyle === 'count' ? (
+                           unread > 99 ? (
+                              '99+'
+                           ) : (
+                              unread
+                           )
+                        ) : (
+                           <span className="size-1.5 rounded-full bg-muted-foreground inline-block" />
+                        )}
+                     </SidebarMenuBadge>
+                  )}
                </SidebarMenuItem>
             ))}
          </SidebarMenu>

@@ -1,6 +1,15 @@
 'use client';
 
-import { Layers, LayoutList, MoreHorizontal } from 'lucide-react';
+import {
+   Box,
+   Compass,
+   ContactRound,
+   Layers,
+   LayoutList,
+   LucideIcon,
+   MoreHorizontal,
+   UserRound,
+} from 'lucide-react';
 
 import {
    DropdownMenu,
@@ -16,19 +25,54 @@ import {
    SidebarMenuButton,
    SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import {
+   isSidebarItemVisible,
+   SidebarItemKey,
+   useSidebarPrefsStore,
+} from '@/store/sidebar-prefs-store';
 import Link from 'next/link';
-import { workspaceItems } from '@/mock-data/side-bar-nav';
-import { RiPresentationLine } from '@remixicon/react';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { CustomizeSidebarDialog } from './customize-sidebar-dialog';
+
+interface WorkspaceNavItem {
+   key: SidebarItemKey;
+   name: string;
+   icon: LucideIcon;
+   /** Path under /{orgId}. */
+   url: string;
+}
+
+const WORKSPACE_NAV: WorkspaceNavItem[] = [
+   { key: 'initiatives', name: 'Initiatives', icon: Compass, url: '/initiatives' },
+   { key: 'projects', name: 'Projects', icon: Box, url: '/projects' },
+   { key: 'views', name: 'Views', icon: Layers, url: '/views' },
+   { key: 'teams', name: 'Teams', icon: ContactRound, url: '/teams' },
+   { key: 'members', name: 'Members', icon: UserRound, url: '/members' },
+];
 
 export function NavWorkspace() {
+   const { orgId } = useParams<{ orgId: string }>();
+   const { visibility } = useSidebarPrefsStore();
+   const [customizeOpen, setCustomizeOpen] = useState(false);
+   const [mounted, setMounted] = useState(false);
+   useEffect(() => setMounted(true), []);
+
+   const items = WORKSPACE_NAV.filter((item) =>
+      mounted ? isSidebarItemVisible(visibility[item.key], 0) : true
+   );
+   const hidden = mounted
+      ? WORKSPACE_NAV.filter((item) => !isSidebarItemVisible(visibility[item.key], 0))
+      : [];
+
    return (
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
          <SidebarMenu>
-            {workspaceItems.map((item) => (
-               <SidebarMenuItem key={item.name}>
+            {items.map((item) => (
+               <SidebarMenuItem key={item.key}>
                   <SidebarMenuButton asChild>
-                     <Link href={item.url}>
+                     <Link href={`/${orgId}${item.url}`}>
                         <item.icon />
                         <span>{item.name}</span>
                      </Link>
@@ -46,16 +90,16 @@ export function NavWorkspace() {
                      </SidebarMenuButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-48 rounded-lg" side="bottom" align="start">
-                     <DropdownMenuItem>
-                        <RiPresentationLine className="text-muted-foreground" />
-                        <span>Initiatives</span>
-                     </DropdownMenuItem>
-                     <DropdownMenuItem>
-                        <Layers className="text-muted-foreground" />
-                        <span>Views</span>
-                     </DropdownMenuItem>
-                     <DropdownMenuSeparator />
-                     <DropdownMenuItem>
+                     {hidden.map((item) => (
+                        <DropdownMenuItem key={item.key} asChild>
+                           <Link href={`/${orgId}${item.url}`}>
+                              <item.icon className="text-muted-foreground" />
+                              <span>{item.name}</span>
+                           </Link>
+                        </DropdownMenuItem>
+                     ))}
+                     {hidden.length > 0 && <DropdownMenuSeparator />}
+                     <DropdownMenuItem onClick={() => setCustomizeOpen(true)}>
                         <LayoutList className="text-muted-foreground" />
                         <span>Customize sidebar</span>
                      </DropdownMenuItem>
@@ -63,6 +107,7 @@ export function NavWorkspace() {
                </DropdownMenu>
             </SidebarMenuItem>
          </SidebarMenu>
+         <CustomizeSidebarDialog open={customizeOpen} onOpenChange={setCustomizeOpen} />
       </SidebarGroup>
    );
 }

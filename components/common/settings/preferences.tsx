@@ -1,12 +1,15 @@
 'use client';
 
+import { CustomizeSidebarDialog } from '@/components/layout/sidebar/customize-sidebar-dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { useState } from 'react';
 import { SelectMenu, SettingsCard, SettingsRow, SettingsSection, SettingsShell } from './shared';
 import { ThemePreferences } from './theme-preferences';
 
 /** Personal "Preferences" settings (general, theme, automations). */
 export default function Preferences() {
+   const [customizeOpen, setCustomizeOpen] = useState(false);
    return (
       <SettingsShell title="Preferences">
          <SettingsSection title="General">
@@ -45,7 +48,7 @@ export default function Preferences() {
                   title="App sidebar"
                   description="Customize sidebar item visibility, ordering, and badge style"
                   trailing={
-                     <Button size="xs" variant="ghost">
+                     <Button size="xs" variant="ghost" onClick={() => setCustomizeOpen(true)}>
                         Customize
                      </Button>
                   }
@@ -93,6 +96,7 @@ export default function Preferences() {
                />
             </SettingsCard>
          </SettingsSection>
+         <CustomizeSidebarDialog open={customizeOpen} onOpenChange={setCustomizeOpen} />
       </SettingsShell>
    );
 }
