@@ -36,7 +36,11 @@ const ACTIVE_CATEGORIES = new Set(['triage', 'backlog', 'unstarted', 'started'])
 /** Categories hidden by "Show closed projects: Hide closed". */
 const CLOSED_CATEGORIES = new Set(['completed', 'canceled']);
 
-export default function Projects() {
+/**
+ * Projects page. With a `teamId` the whole page (tabs, filters, display
+ * options, views, insights) is scoped to that team's projects.
+ */
+export default function Projects({ teamId }: { teamId?: string }) {
    const { filters } = useProjectsFilterStore();
    const { viewTypes, grouping, ordering, closedProjects, showEmptyGroups } =
       useProjectsDisplayStore();
@@ -47,6 +51,9 @@ export default function Projects() {
    const displayed = useMemo(() => {
       let list = allProjects.slice();
 
+      if (teamId) {
+         list = list.filter((project) => project.teamId === teamId);
+      }
       if (tab === 'active') {
          list = list.filter((project) => ACTIVE_CATEGORIES.has(project.status.category));
       }
@@ -74,7 +81,7 @@ export default function Projects() {
          }
       };
       return list.sort(compare);
-   }, [tab, closedProjects, filters, ordering]);
+   }, [tab, closedProjects, filters, ordering, teamId]);
 
    const groups = useMemo<ProjectGroup[]>(() => {
       if (grouping === 'none') {
