@@ -51,7 +51,7 @@ type BaseProject = Omit<
    'targetDate' | 'teamId' | 'labels' | 'initiative' | 'healthUpdatedAgoDays'
 >;
 
-interface Health {
+export interface Health {
    id: 'no-update' | 'off-track' | 'on-track' | 'at-risk';
    name: string;
    color: string;
