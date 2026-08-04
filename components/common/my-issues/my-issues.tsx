@@ -5,6 +5,7 @@ import { IssueFilterBar } from '@/components/common/issues/issue-filter-bar';
 import { GroupedIssuesView } from '@/components/common/issues/grouped-issues-view';
 import { InsightsPanel } from '@/components/common/issues/insights-panel';
 import { SearchIssues } from '@/components/common/issues/search-issues';
+import { BreakdownPanel } from './breakdown-panel';
 import { displayOrderedStatus } from '@/mock-data/status';
 import { useFilterStore } from '@/store/filter-store';
 import { useIssuesStore } from '@/store/issues-store';
@@ -63,6 +64,11 @@ export default function MyIssues() {
             {openPanel === 'insights' && (
                <aside className="hidden lg:flex w-[420px] shrink-0 border-l h-full overflow-hidden bg-container">
                   <InsightsPanel issues={displayedIssues} />
+               </aside>
+            )}
+            {openPanel === 'breakdown' && (
+               <aside className="hidden lg:flex w-80 shrink-0 border-l h-full overflow-hidden bg-container">
+                  <BreakdownPanel issues={displayedIssues} />
                </aside>
             )}
          </div>

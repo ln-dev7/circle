@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { useIssuesStore } from '@/store/issues-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
 import { useSearchStore } from '@/store/search-store';
-import { BarChart3, SearchIcon } from 'lucide-react';
+import { BarChart3, PanelRight, SearchIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { DisplayOptions } from '../display-options';
 import Notifications from '../issues/notifications';
@@ -129,6 +129,14 @@ function HeaderOptions() {
                aria-label="Toggle insights panel"
             >
                <BarChart3 className="size-4" />
+            </Button>
+            <Button
+               size="xs"
+               variant={openPanel === 'breakdown' ? 'secondary' : 'ghost'}
+               onClick={() => togglePanel('breakdown')}
+               aria-label="Toggle breakdown panel"
+            >
+               <PanelRight className="size-4" />
             </Button>
             <DisplayOptions />
          </div>
