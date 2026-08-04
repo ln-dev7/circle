@@ -244,9 +244,13 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   (`store/views-display-store.ts`); detail page applies the view's declarative filter
   (`mock-data/views.ts`: `filterIssuesForView` / `filterProjectsForView`) and reuses
   `GroupedIssuesView` + `InsightsPanel` (issue views) or `ProjectsList` (project views).
+  Views can carry a `teamId`; the team sidebar "Views"/"Projects" entries open the
+  team-scoped pages `/{orgId}/team/{teamId}/views` (same `Views` component with a
+  `teamId` prop) and `/{orgId}/team/{teamId}/projects` (`teams/team-projects.tsx`).
 - **Customize sidebar** (`components/layout/sidebar/customize-sidebar-dialog.tsx` +
   `store/sidebar-prefs-store.ts`) — functional modal (badge style Count/Dot, per-item
-  visibility Always/On badge/Never) opened from the sidebar "More" menu and from
+  visibility Always/On badge/Never, drag & drop reordering via the grip handles —
+  persisted `order` per section) opened from the sidebar "More" menu and from
   Preferences; `nav-inbox`/`nav-workspace` respect the persisted prefs and hidden
   workspace items fall back into the "More" dropdown.
 - **Integration logos** (`components/common/settings/integration-logos.tsx`) — brand SVG

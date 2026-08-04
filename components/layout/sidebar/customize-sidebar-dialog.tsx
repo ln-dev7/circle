@@ -1,11 +1,6 @@
 'use client';
 
-import {
-   Dialog,
-   DialogContent,
-   DialogHeader,
-   DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -14,8 +9,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import {
+   resolveOrder,
    SidebarBadgeStyle,
    SidebarItemKey,
+   SidebarSection,
    SidebarVisibility,
    useSidebarPrefsStore,
 } from '@/store/sidebar-prefs-store';
@@ -33,6 +30,7 @@ import {
    LucideIcon,
    UserRound,
 } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 interface ItemConfig {
    key: SidebarItemKey;
@@ -42,13 +40,13 @@ interface ItemConfig {
    badged?: boolean;
 }
 
-const PERSONAL_ITEMS: ItemConfig[] = [
+export const PERSONAL_ITEMS: ItemConfig[] = [
    { key: 'inbox', label: 'Inbox', icon: Inbox, badged: true },
    { key: 'my-issues', label: 'My issues', icon: FolderKanban },
    { key: 'agent', label: 'Agent', icon: Bot },
 ];
 
-const WORKSPACE_ITEMS: ItemConfig[] = [
+export const WORKSPACE_ITEMS: ItemConfig[] = [
    { key: 'initiatives', label: 'Initiatives', icon: Compass },
    { key: 'projects', label: 'Projects', icon: Box },
    { key: 'views', label: 'Views', icon: Layers },
@@ -89,37 +87,103 @@ function VisibilityDropdown({
    );
 }
 
-function ItemRow({ item }: { item: ItemConfig }) {
-   const { visibility, setVisibility } = useSidebarPrefsStore();
-   const current = visibility[item.key];
-   const options: SidebarVisibility[] = item.badged
-      ? ['always', 'badged', 'never']
-      : ['always', 'never'];
+/** One section (Personal / Workspace): rows reorderable by dragging the grip. */
+function ItemSection({ section, items }: { section: SidebarSection; items: ItemConfig[] }) {
+   const { visibility, order, setVisibility, moveItem } = useSidebarPrefsStore();
+   const [dragIndex, setDragIndex] = useState<number | null>(null);
+   const [overIndex, setOverIndex] = useState<number | null>(null);
+   /** Only start a drag when it was initiated from the grip handle. */
+   const dragFromGrip = useRef(false);
+
+   const orderedKeys = resolveOrder(
+      order[section],
+      items.map((item) => item.key)
+   );
+   const ordered = orderedKeys
+      .map((key) => items.find((item) => item.key === key))
+      .filter((item): item is ItemConfig => Boolean(item));
+
+   const resetDrag = () => {
+      setDragIndex(null);
+      setOverIndex(null);
+      dragFromGrip.current = false;
+   };
 
    return (
-      <div className="flex items-center gap-2 px-3 py-2.5">
-         <GripVertical className="size-3.5 text-muted-foreground/50 shrink-0" />
-         <item.icon
-            className={cn('size-4 shrink-0', current === 'never' && 'text-muted-foreground/50')}
-         />
-         <span
-            className={cn(
-               'flex-1 text-sm',
-               current === 'never' && 'text-muted-foreground/60'
-            )}
-         >
-            {item.label}
-         </span>
-         <VisibilityDropdown
-            value={current}
-            options={options}
-            onChange={(value) => setVisibility(item.key, value)}
-         />
+      <div className="rounded-lg border divide-y divide-border/60">
+         {ordered.map((item, index) => {
+            const current = visibility[item.key];
+            const options: SidebarVisibility[] = item.badged
+               ? ['always', 'badged', 'never']
+               : ['always', 'never'];
+            return (
+               <div
+                  key={item.key}
+                  draggable
+                  onDragStart={(event) => {
+                     if (!dragFromGrip.current) {
+                        event.preventDefault();
+                        return;
+                     }
+                     event.dataTransfer.effectAllowed = 'move';
+                     setDragIndex(index);
+                  }}
+                  onDragOver={(event) => {
+                     event.preventDefault();
+                     if (dragIndex !== null) setOverIndex(index);
+                  }}
+                  onDrop={(event) => {
+                     event.preventDefault();
+                     if (dragIndex !== null && dragIndex !== index) {
+                        moveItem(section, dragIndex, index);
+                     }
+                     resetDrag();
+                  }}
+                  onDragEnd={resetDrag}
+                  className={cn(
+                     'flex items-center gap-2 px-3 py-2.5 transition-colors',
+                     dragIndex === index && 'opacity-40',
+                     overIndex === index &&
+                        dragIndex !== null &&
+                        dragIndex !== index &&
+                        'bg-accent/50'
+                  )}
+               >
+                  <span
+                     onMouseDown={() => (dragFromGrip.current = true)}
+                     onMouseUp={() => (dragFromGrip.current = false)}
+                     className="cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground shrink-0"
+                     aria-label={`Reorder ${item.label}`}
+                  >
+                     <GripVertical className="size-3.5" />
+                  </span>
+                  <item.icon
+                     className={cn(
+                        'size-4 shrink-0',
+                        current === 'never' && 'text-muted-foreground/50'
+                     )}
+                  />
+                  <span
+                     className={cn(
+                        'flex-1 text-sm',
+                        current === 'never' && 'text-muted-foreground/60'
+                     )}
+                  >
+                     {item.label}
+                  </span>
+                  <VisibilityDropdown
+                     value={current}
+                     options={options}
+                     onChange={(value) => setVisibility(item.key, value)}
+                  />
+               </div>
+            );
+         })}
       </div>
    );
 }
 
-/** Linear-style "Customize sidebar" modal (badge style + item visibility). */
+/** Linear-style "Customize sidebar" modal (badge style, visibility, drag & drop order). */
 export function CustomizeSidebarDialog({
    open,
    onOpenChange,
@@ -161,20 +225,12 @@ export function CustomizeSidebarDialog({
 
                <div className="flex flex-col gap-2">
                   <span className="text-sm font-medium">Personal</span>
-                  <div className="rounded-lg border divide-y divide-border/60">
-                     {PERSONAL_ITEMS.map((item) => (
-                        <ItemRow key={item.key} item={item} />
-                     ))}
-                  </div>
+                  <ItemSection section="personal" items={PERSONAL_ITEMS} />
                </div>
 
                <div className="flex flex-col gap-2">
                   <span className="text-sm font-medium">Workspace</span>
-                  <div className="rounded-lg border divide-y divide-border/60">
-                     {WORKSPACE_ITEMS.map((item) => (
-                        <ItemRow key={item.key} item={item} />
-                     ))}
-                  </div>
+                  <ItemSection section="workspace" items={WORKSPACE_ITEMS} />
                </div>
             </div>
          </DialogContent>

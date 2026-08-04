@@ -11,6 +11,7 @@ import { inboxItems } from '@/mock-data/side-bar-nav';
 import { useNotificationsStore } from '@/store/notifications-store';
 import {
    isSidebarItemVisible,
+   resolveOrder,
    SidebarItemKey,
    useSidebarPrefsStore,
 } from '@/store/sidebar-prefs-store';
@@ -24,14 +25,25 @@ const ITEM_KEYS: Record<string, SidebarItemKey> = {
 };
 
 export function NavInbox() {
-   const { visibility, badgeStyle } = useSidebarPrefsStore();
+   const { visibility, badgeStyle, order } = useSidebarPrefsStore();
    const { getUnreadCount } = useNotificationsStore();
    const [mounted, setMounted] = useState(false);
    useEffect(() => setMounted(true), []);
 
    const unread = mounted ? getUnreadCount() : 0;
 
-   const items = inboxItems.filter((item) => {
+   const orderedItems = mounted
+      ? resolveOrder(
+           order.personal,
+           inboxItems.map((item) => ITEM_KEYS[item.name]).filter(Boolean)
+        )
+           .map((key) =>
+              inboxItems.find((item) => ITEM_KEYS[item.name] === key)
+           )
+           .filter((item): item is (typeof inboxItems)[number] => Boolean(item))
+      : inboxItems;
+
+   const items = orderedItems.filter((item) => {
       if (!mounted) return true;
       const key = ITEM_KEYS[item.name];
       if (!key) return true;

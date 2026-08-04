@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/sidebar';
 import {
    isSidebarItemVisible,
+   resolveOrder,
    SidebarItemKey,
    useSidebarPrefsStore,
 } from '@/store/sidebar-prefs-store';
@@ -53,16 +54,25 @@ const WORKSPACE_NAV: WorkspaceNavItem[] = [
 
 export function NavWorkspace() {
    const { orgId } = useParams<{ orgId: string }>();
-   const { visibility } = useSidebarPrefsStore();
+   const { visibility, order } = useSidebarPrefsStore();
    const [customizeOpen, setCustomizeOpen] = useState(false);
    const [mounted, setMounted] = useState(false);
    useEffect(() => setMounted(true), []);
 
-   const items = WORKSPACE_NAV.filter((item) =>
+   const orderedNav = mounted
+      ? resolveOrder(
+           order.workspace,
+           WORKSPACE_NAV.map((item) => item.key)
+        )
+           .map((key) => WORKSPACE_NAV.find((item) => item.key === key))
+           .filter((item): item is WorkspaceNavItem => Boolean(item))
+      : WORKSPACE_NAV;
+
+   const items = orderedNav.filter((item) =>
       mounted ? isSidebarItemVisible(visibility[item.key], 0) : true
    );
    const hidden = mounted
-      ? WORKSPACE_NAV.filter((item) => !isSidebarItemVisible(visibility[item.key], 0))
+      ? orderedNav.filter((item) => !isSidebarItemVisible(visibility[item.key], 0))
       : [];
 
    return (
