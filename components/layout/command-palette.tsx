@@ -195,7 +195,10 @@ export function CommandPalette() {
             if (!value) reset();
          }}
       >
-         <DialogContent className="overflow-hidden p-0 sm:max-w-2xl top-[22%] translate-y-0 gap-0">
+         <DialogContent
+            showCloseButton={false}
+            className="overflow-hidden p-0 sm:max-w-2xl top-[22%] translate-y-0 gap-0"
+         >
             <DialogTitle className="sr-only">Command menu</DialogTitle>
             <DialogDescription className="sr-only">
                Type a command or search
