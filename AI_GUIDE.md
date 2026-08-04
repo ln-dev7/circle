@@ -208,6 +208,16 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   workspace agent: hero screen with example cards, multi-conversation chat
   (`agent-chat-store`), deterministic canned replies (`mock-data/agent.ts`) streamed
   word-by-word, light markdown rendering (bold / inline code / lists). No network.
+- **Settings** (`components/common/settings/` + `app/[orgId]/settings/`) — Linear-style
+  settings area. The app sidebar swaps to a settings nav (`sidebar/nav-settings.tsx`,
+  groups Personal / Issues / Projects / Features, plus `nav-teams-settings.tsx`) whenever
+  the pathname contains `/settings`. Shared primitives live in `settings/shared.tsx`
+  (`SettingsShell`, `SettingsSection`, `SettingsCard`, `SettingsRow`, `SelectMenu`).
+  Pages: `notifications`, `code-and-reviews` (with a fake diff preview), `security`,
+  `connected-accounts`, `agent-personalization`, `ai`, `issue-labels` (counts computed
+  from `mock-data/issues`), `issue-templates`, `project-statuses` (project counts grouped
+  by status category), `teams/[teamId]` (per-team settings incl. danger zone) and
+  `teams/new`. Toggles are uncontrolled `ui/switch`; selects are local-state dropdowns.
 - **Create issue modal** (`components/layout/sidebar/create-new-issue/`) — dialog with
   status/priority/assignee/project/label selectors; writes through `issues-store.addIssue`.
 - **App shell** (`components/layout/main-layout.tsx` + `sidebar/`) — everything else
