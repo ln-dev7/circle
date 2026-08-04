@@ -218,6 +218,12 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   from `mock-data/issues`), `issue-templates`, `project-statuses` (project counts grouped
   by status category), `teams/[teamId]` (per-team settings incl. danger zone) and
   `teams/new`. Toggles are uncontrolled `ui/switch`; selects are local-state dropdowns.
+  `integrations` is a full directory page (search, "Enabled" carousel, categorized cards)
+  driven by `settings/integrations-data.ts`. Sections without a dedicated UI yet (`slas`,
+  `project-labels`, `project-templates`, `project-updates`, `initiatives`, `documents`,
+  `customer-requests`, `releases`, `pulse`, `asks`, `emojis`) render the generic
+  `settings/settings-placeholder.tsx` empty state configured by
+  `settings/placeholder-sections.ts`.
 - **Theme system** (`store/theme-store.ts` + `components/layout/theme-applier.tsx` +
   `components/common/settings/theme-preferences.tsx`) — Linear-style themes: next-themes
   keeps resolving light/dark/system, the persisted store adds named variants

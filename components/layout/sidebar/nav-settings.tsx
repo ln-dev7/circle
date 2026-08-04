@@ -34,7 +34,7 @@ import { useParams, usePathname } from 'next/navigation';
 
 interface SettingsNavItem {
    name: string;
-   /** Path under /{orgId}. Items without a dedicated page point to /settings. */
+   /** Path under /{orgId}. */
    url: string;
    icon: LucideIcon;
 }
@@ -63,30 +63,30 @@ export const settingsNav: SettingsNavGroup[] = [
       items: [
          { name: 'Labels', url: '/settings/issue-labels', icon: Tag },
          { name: 'Templates', url: '/settings/issue-templates', icon: FileText },
-         { name: 'SLAs', url: '/settings', icon: Flame },
+         { name: 'SLAs', url: '/settings/slas', icon: Flame },
       ],
    },
    {
       label: 'Projects',
       items: [
-         { name: 'Labels', url: '/settings', icon: Tag },
-         { name: 'Templates', url: '/settings', icon: FileText },
+         { name: 'Labels', url: '/settings/project-labels', icon: Tag },
+         { name: 'Templates', url: '/settings/project-templates', icon: FileText },
          { name: 'Statuses', url: '/settings/project-statuses', icon: Target },
-         { name: 'Updates', url: '/settings', icon: Zap },
+         { name: 'Updates', url: '/settings/project-updates', icon: Zap },
       ],
    },
    {
       label: 'Features',
       items: [
          { name: 'AI & Agents', url: '/settings/ai', icon: Sparkles },
-         { name: 'Initiatives', url: '/settings', icon: Compass },
-         { name: 'Documents', url: '/settings', icon: FileText },
-         { name: 'Customer requests', url: '/settings', icon: HeartHandshake },
-         { name: 'Releases', url: '/settings', icon: Rocket },
-         { name: 'Pulse', url: '/settings', icon: Zap },
-         { name: 'Asks', url: '/settings', icon: MessageCircleQuestion },
-         { name: 'Emojis', url: '/settings', icon: Smile },
-         { name: 'Integrations', url: '/settings', icon: Blocks },
+         { name: 'Initiatives', url: '/settings/initiatives', icon: Compass },
+         { name: 'Documents', url: '/settings/documents', icon: FileText },
+         { name: 'Customer requests', url: '/settings/customer-requests', icon: HeartHandshake },
+         { name: 'Releases', url: '/settings/releases', icon: Rocket },
+         { name: 'Pulse', url: '/settings/pulse', icon: Zap },
+         { name: 'Asks', url: '/settings/asks', icon: MessageCircleQuestion },
+         { name: 'Emojis', url: '/settings/emojis', icon: Smile },
+         { name: 'Integrations', url: '/settings/integrations', icon: Blocks },
       ],
    },
 ];
@@ -103,7 +103,7 @@ export function NavSettings() {
                <SidebarMenu>
                   {group.items.map((item) => {
                      const href = `/${orgId}${item.url}`;
-                     const isActive = item.url !== '/settings' ? pathname === href : false;
+                     const isActive = pathname === href;
                      return (
                         <SidebarMenuItem key={`${group.label}-${item.name}`}>
                            <SidebarMenuButton asChild isActive={isActive}>
