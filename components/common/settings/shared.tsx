@@ -127,11 +127,17 @@ export function SettingsRow({
 export function SelectMenu({
    options,
    defaultValue,
+   value: controlledValue,
+   onChange,
 }: {
    options: string[];
    defaultValue?: string;
+   /** Optional controlled value (e.g. wired to next-themes). */
+   value?: string;
+   onChange?: (value: string) => void;
 }) {
-   const [value, setValue] = useState(defaultValue ?? options[0]);
+   const [internal, setInternal] = useState(defaultValue ?? options[0]);
+   const value = controlledValue ?? internal;
    return (
       <DropdownMenu>
          <DropdownMenuTrigger className="h-8 px-3 rounded-md border bg-container text-sm inline-flex items-center gap-1.5 hover:bg-accent transition-colors outline-none">
@@ -142,7 +148,10 @@ export function SelectMenu({
             {options.map((option) => (
                <DropdownMenuItem
                   key={option}
-                  onClick={() => setValue(option)}
+                  onClick={() => {
+                     setInternal(option);
+                     onChange?.(option);
+                  }}
                   className="flex items-center gap-2 text-sm"
                >
                   <span className="flex-1">{option}</span>

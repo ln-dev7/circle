@@ -49,8 +49,8 @@ export const settingsNav: SettingsNavGroup[] = [
    {
       label: 'Personal',
       items: [
-         { name: 'Preferences', url: '/settings', icon: Settings },
-         { name: 'Profile', url: '/settings', icon: UserRound },
+         { name: 'Preferences', url: '/settings/preferences', icon: Settings },
+         { name: 'Profile', url: '/settings/profile', icon: UserRound },
          { name: 'Notifications', url: '/settings/notifications', icon: Bell },
          { name: 'Code & reviews', url: '/settings/code-and-reviews', icon: Code },
          { name: 'Security & access', url: '/settings/security', icon: KeyRound },
