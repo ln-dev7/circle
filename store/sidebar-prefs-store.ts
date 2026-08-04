@@ -79,16 +79,34 @@ export function resolveOrder(
    stored: SidebarItemKey[] | undefined,
    defaults: SidebarItemKey[]
 ): SidebarItemKey[] {
-   const valid = (stored ?? []).filter((key) => defaults.includes(key));
-   return [...valid, ...defaults.filter((key) => !valid.includes(key))];
+   const result = (stored ?? []).filter((key) => defaults.includes(key));
+   // Insert items missing from the stored order (added after it was
+   // persisted) right after their default predecessor, not at the end.
+   defaults.forEach((key, index) => {
+      if (result.includes(key)) return;
+      let insertAt = 0;
+      for (let i = index - 1; i >= 0; i--) {
+         const position = result.indexOf(defaults[i]);
+         if (position !== -1) {
+            insertAt = position + 1;
+            break;
+         }
+      }
+      result.splice(insertAt, 0, key);
+   });
+   return result;
 }
 
-/** Should an item be rendered, given its visibility pref and badge count? */
+/**
+ * Should an item be rendered, given its visibility pref and badge count?
+ * A missing pref (item added after the prefs were persisted) counts as
+ * "always" so new sidebar entries show up by default.
+ */
 export function isSidebarItemVisible(
-   visibility: SidebarVisibility,
+   visibility: SidebarVisibility | undefined,
    badgeCount: number
 ): boolean {
-   if (visibility === 'always') return true;
+   if (!visibility || visibility === 'always') return true;
    if (visibility === 'badged') return badgeCount > 0;
    return false;
 }

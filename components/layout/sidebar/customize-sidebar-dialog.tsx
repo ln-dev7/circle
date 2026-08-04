@@ -114,7 +114,7 @@ function ItemSection({ section, items }: { section: SidebarSection; items: ItemC
    return (
       <div className="rounded-lg border divide-y divide-border/60">
          {ordered.map((item, index) => {
-            const current = visibility[item.key];
+            const current = visibility[item.key] ?? 'always';
             const options: SidebarVisibility[] = item.badged
                ? ['always', 'badged', 'never']
                : ['always', 'never'];
