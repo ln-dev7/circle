@@ -1,9 +1,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { RiGithubLine, RiNotionFill, RiSlackFill } from '@remixicon/react';
-import { ArrowUpRight, Calendar, ChevronDown } from 'lucide-react';
+import { ArrowUpRight, ChevronDown } from 'lucide-react';
+import { INTEGRATION_LOGOS } from './integration-logos';
 import { EnabledDot, SettingsCard, SettingsRow, SettingsSection, SettingsShell } from './shared';
+
+const SlackLogo = INTEGRATION_LOGOS['slack'];
+const GoogleCalendarLogo = INTEGRATION_LOGOS['google-calendar'];
+const NotionLogo = INTEGRATION_LOGOS['notion'];
+const GithubLogo = INTEGRATION_LOGOS['github'];
 
 const ConnectedTrailing = () => (
    <span className="inline-flex items-center gap-1.5 text-sm">
@@ -24,7 +29,7 @@ export default function AccountConnections() {
          <SettingsSection>
             <SettingsCard>
                <SettingsRow
-                  icon={<RiSlackFill className="size-4" />}
+                  icon={<SlackLogo className="size-4" />}
                   title="Slack"
                   description="Sync your message attribution, and receive notifications in Slack"
                   trailing={<ConnectedTrailing />}
@@ -32,7 +37,7 @@ export default function AccountConnections() {
             </SettingsCard>
             <SettingsCard>
                <SettingsRow
-                  icon={<Calendar className="size-4" />}
+                  icon={<GoogleCalendarLogo className="size-4" />}
                   title="Google Calendar"
                   description="Sync your calendar out-of-office status to LNDev UI"
                   trailing={<ConnectedTrailing />}
@@ -40,7 +45,7 @@ export default function AccountConnections() {
             </SettingsCard>
             <SettingsCard>
                <SettingsRow
-                  icon={<RiNotionFill className="size-4" />}
+                  icon={<NotionLogo className="size-4" />}
                   title="Notion"
                   description="Preview issues, projects, and views within Notion"
                   trailing={
@@ -53,7 +58,7 @@ export default function AccountConnections() {
             </SettingsCard>
             <SettingsCard>
                <SettingsRow
-                  icon={<RiGithubLine className="size-4" />}
+                  icon={<GithubLogo className="size-4" />}
                   title={
                      <>
                         GitHub

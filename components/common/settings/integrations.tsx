@@ -3,6 +3,7 @@
 import { Input } from '@/components/ui/input';
 import { ChevronRight, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { INTEGRATION_LOGOS } from './integration-logos';
 import {
    ENABLED_INTEGRATIONS,
    INTEGRATION_CATEGORIES,
@@ -14,6 +15,18 @@ import {
 const VISIBLE_PER_CATEGORY = 8;
 
 function IntegrationIcon({ integration, size = 36 }: { integration: Integration; size?: number }) {
+   const Logo = INTEGRATION_LOGOS[integration.id];
+   if (Logo) {
+      return (
+         <span
+            className="rounded-md border bg-background inline-flex items-center justify-center shrink-0"
+            style={{ width: size, height: size }}
+            aria-hidden
+         >
+            <Logo className="size-[60%]" />
+         </span>
+      );
+   }
    const initials = integration.name
       .replace(/[^a-zA-Z0-9 ]/g, '')
       .split(' ')

@@ -232,6 +232,26 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   optional custom sidebar) whose CSS variables are generated at runtime by
   `ThemeApplier` (mounted in `theme-provider.tsx`). Custom themes can be copied to /
   imported from the clipboard as JSON.
+- **Initiatives** (`components/common/initiatives/` + `app/[orgId]/initiatives/` +
+  `app/[orgId]/initiative/[initiativeId]/`) — Linear-style initiatives: list with
+  Active/Planned/All tabs, URL-backed filters (`store/initiatives-filter-store.ts`, nuqs),
+  display options (`store/initiatives-display-store.ts`: grouping/ordering/columns) and an
+  Owner/Team/Health side panel; detail page with Overview (properties, progress area chart,
+  Health/Status/Teams/Leads breakdowns, projects table), Activity and Projects (reuses
+  `ProjectsTimeline`) tabs. Data in `mock-data/initiatives.ts` (references project ids).
+- **Views** (`components/common/views/` + `app/[orgId]/views/` + `app/[orgId]/view/[viewId]/`)
+  — saved views: list with Issues/Projects tabs and display options
+  (`store/views-display-store.ts`); detail page applies the view's declarative filter
+  (`mock-data/views.ts`: `filterIssuesForView` / `filterProjectsForView`) and reuses
+  `GroupedIssuesView` + `InsightsPanel` (issue views) or `ProjectsList` (project views).
+- **Customize sidebar** (`components/layout/sidebar/customize-sidebar-dialog.tsx` +
+  `store/sidebar-prefs-store.ts`) — functional modal (badge style Count/Dot, per-item
+  visibility Always/On badge/Never) opened from the sidebar "More" menu and from
+  Preferences; `nav-inbox`/`nav-workspace` respect the persisted prefs and hidden
+  workspace items fall back into the "More" dropdown.
+- **Integration logos** (`components/common/settings/integration-logos.tsx`) — brand SVG
+  icons (sourced from logos.lndev.me) used by the integrations directory and connected
+  accounts; unknown brands fall back to colored initial chips.
 - **Create issue modal** (`components/layout/sidebar/create-new-issue/`) — dialog with
   status/priority/assignee/project/label selectors; writes through `issues-store.addIssue`.
 - **App shell** (`components/layout/main-layout.tsx` + `sidebar/`) — everything else
