@@ -31,7 +31,7 @@ export const inboxItems = [
    },
    {
       name: 'My issues',
-      url: '#',
+      url: '/lndev-ui/my-issues',
       icon: FolderKanban,
    },
    {

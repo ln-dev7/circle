@@ -262,6 +262,14 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   13 seeded reviews whose `resolves` reference real issue identifiers;
   `getReviewFileDiff`/`getReviewGuide` expand deterministic diffs and guide
   sections from the seeds.
+- **My issues** (`components/common/my-issues/my-issues.tsx` + `app/[orgId]/my-issues/`)
+  — personal issue hub with Assigned / Created / Subscribed / Activity tabs (nuqs).
+  Assigned groups by cycle (name + date range from `mock-data/cycles`) then
+  Backlog/Completed; Created/Subscribed are flat `IssueLine` lists derived from
+  `users[0]` assignment and the deterministic `issueCreatorIndex`; Activity reuses
+  `GroupedIssuesView` in board mode. Right side: the shared `InsightsPanel`
+  (right-panel-store, open by default) or a Labels/Priority/Projects/Teams
+  breakdown panel on the Created tab.
 - **Customize sidebar** (`components/layout/sidebar/customize-sidebar-dialog.tsx` +
   `store/sidebar-prefs-store.ts`) — functional modal (badge style Count/Dot, per-item
   visibility Always/On badge/Never, drag & drop reordering via the grip handles —
