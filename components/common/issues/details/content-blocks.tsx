@@ -118,8 +118,20 @@ export function ContentBlocks({ blocks }: { blocks: ContentBlock[] }) {
          {blocks.map((block, index) => {
             switch (block.type) {
                case 'heading':
-                  return (
-                     <h2 key={index} className="text-lg font-semibold mt-6 mb-2 first:mt-0">
+                  return block.level === 2 ? (
+                     <h3
+                        key={index}
+                        id={`doc-h-${index}`}
+                        className="text-base font-semibold mt-5 mb-1.5 scroll-mt-24"
+                     >
+                        {block.text}
+                     </h3>
+                  ) : (
+                     <h2
+                        key={index}
+                        id={`doc-h-${index}`}
+                        className="text-lg font-semibold mt-6 mb-2 first:mt-0 scroll-mt-24"
+                     >
                         {block.text}
                      </h2>
                   );

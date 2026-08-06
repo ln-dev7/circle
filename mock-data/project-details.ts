@@ -70,7 +70,7 @@ const detailsById: Record<string, Omit<ProjectDetail, 'projectId'>> = {
          'Rebuild the core primitives (Button, Input, Dialog, Menu) on a shared behavior layer. Goal: one accessibility contract, fewer bundle bytes, no visual regressions.',
       description: [
          { type: 'heading', text: '1. Problem alignment' },
-         { type: 'heading', text: '🔍 Problem & insights' },
+         { type: 'heading', text: '🔍 Problem & insights', level: 2 },
          {
             type: 'paragraph',
             text: 'Each core primitive currently ships its own focus, dismiss and positioning logic. The duplication costs ~9kb gzipped, and subtle behavior differences (Escape handling, focus return) confuse users who mix components.',
@@ -79,7 +79,7 @@ const detailsById: Record<string, Omit<ProjectDetail, 'projectId'>> = {
             type: 'paragraph',
             text: 'A shared behavior layer lets us fix accessibility once and guarantees that every overlay component dismisses, traps and restores focus the same way.',
          },
-         { type: 'heading', text: '👥 Target audience' },
+         { type: 'heading', text: '👥 Target audience', level: 2 },
          {
             type: 'paragraph',
             text: 'Product teams building data-dense internal tools, in **desktop-first** environments. The migration must be codemod-friendly for the ~40 apps already on v2.',
@@ -152,12 +152,12 @@ const detailsById: Record<string, Omit<ProjectDetail, 'projectId'>> = {
          'Token pipeline v2: OKLCH palettes, semantic aliases and per-brand theme packages generated from a single source of truth.',
       description: [
          { type: 'heading', text: '1. Problem alignment' },
-         { type: 'heading', text: '🔍 Problem & insights' },
+         { type: 'heading', text: '🔍 Problem & insights', level: 2 },
          {
             type: 'paragraph',
             text: 'Brands override raw hex values today, so every palette tweak fans out into hand-edited files. Contrast bugs slip through because nothing validates the derived pairs.',
          },
-         { type: 'heading', text: '🎯 Goals' },
+         { type: 'heading', text: '🎯 Goals', level: 2 },
          {
             type: 'numbered-list',
             items: [
@@ -215,7 +215,7 @@ const detailsById: Record<string, Omit<ProjectDetail, 'projectId'>> = {
             type: 'paragraph',
             text: 'The current Table component tops out around 2k rows and every team re-implements pinning and grouping on top. The grid is the most requested component of the last three quarterly surveys.',
          },
-         { type: 'heading', text: '👥 Target audience' },
+         { type: 'heading', text: '👥 Target audience', level: 2 },
          {
             type: 'paragraph',
             text: 'Ops and analytics teams. P95 dataset observed in telemetry: 38k rows, 24 columns.',

@@ -10,7 +10,7 @@ import { User, users } from './users';
  * formatting: `code` and **bold** (parsed by the block renderer).
  */
 export type ContentBlock =
-   | { type: 'heading'; text: string }
+   | { type: 'heading'; text: string; level?: 1 | 2 }
    | { type: 'paragraph'; text: string }
    | { type: 'bullet-list'; items: string[] }
    | { type: 'numbered-list'; items: string[] }

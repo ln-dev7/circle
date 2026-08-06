@@ -10,7 +10,8 @@ import { format, parseISO } from 'date-fns';
 import { ArrowRight, ChevronDown, FileText, PenLine, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
+import { DocumentOutline, getOutlineItems } from './document-outline';
 import { ProjectSidePanel } from './project-side-panel';
 
 interface ProjectOverviewProps {
@@ -31,11 +32,15 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
 
    const { orgId } = useParams<{ orgId: string }>();
    const team = teams.find((candidate) => candidate.id === project.teamId);
+   const scrollRef = useRef<HTMLDivElement>(null);
+   const outlineItems = useMemo(() => getOutlineItems(detail.description), [detail.description]);
 
    return (
       <div className="w-full h-full flex overflow-hidden">
          {/* Main column */}
-         <div className="flex-1 min-w-0 h-full overflow-y-auto">
+         <div className="flex-1 min-w-0 h-full relative">
+            <DocumentOutline items={outlineItems} scrollRef={scrollRef} />
+            <div ref={scrollRef} className="h-full overflow-y-auto">
             <div className="max-w-3xl mx-auto px-6 lg:px-10 py-10">
                <div className="inline-flex size-10 bg-muted/50 items-center justify-center rounded-md mb-4">
                   <project.icon className="size-6" />
@@ -151,6 +156,7 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                      <ContentBlocks blocks={detail.description} />
                   </div>
                </div>
+            </div>
             </div>
          </div>
 
