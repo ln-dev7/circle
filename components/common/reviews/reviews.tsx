@@ -12,6 +12,7 @@ import {
 import { ListFilter, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { ReactNode, useState } from 'react';
 import { ReviewDetail, ReviewSection } from './review-detail';
 import { PrIcon } from './review-shared';
 
@@ -31,7 +32,11 @@ function EmptySketch() {
    );
 }
 
-const GROUP_LABELS: Record<ReviewStatus, string> = { merged: 'Merged', closed: 'Closed' };
+const GROUP_LABELS: Record<ReviewStatus, string> = {
+   open: 'Open',
+   merged: 'Merged',
+   closed: 'Closed',
+};
 
 function ReviewRow({
    review,
@@ -57,13 +62,48 @@ function ReviewRow({
    );
 }
 
-function GroupHeader({ label }: { label: string }) {
+/** Collapsible status group: the header arrow really opens and closes the rows. */
+function ReviewGroup({
+   label,
+   count,
+   children,
+}: {
+   label: string;
+   count: number;
+   children: ReactNode;
+}) {
+   const [open, setOpen] = useState(true);
    return (
-      <div className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium bg-[color-mix(in_oklab,var(--accent)_30%,var(--container))] border-b border-border/40">
-         {label}
-         <svg width="8" height="8" viewBox="0 0 8 8" className="text-muted-foreground" aria-hidden>
-            <path d="M1 3l3 3 3-3" stroke="currentColor" strokeWidth="1.2" fill="none" />
-         </svg>
+      <div>
+         <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            aria-expanded={open}
+            className="w-full flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium bg-[color-mix(in_oklab,var(--accent)_30%,var(--container))] border-b border-border/40 cursor-pointer select-none"
+         >
+            {label}
+            <svg
+               width="8"
+               height="8"
+               viewBox="0 0 8 8"
+               className={cn(
+                  'text-muted-foreground transition-transform duration-200',
+                  !open && '-rotate-90'
+               )}
+               aria-hidden
+            >
+               <path d="M1 3l3 3 3-3" stroke="currentColor" strokeWidth="1.2" fill="none" />
+            </svg>
+            <span className="ml-auto text-muted-foreground font-normal">{count}</span>
+         </button>
+         <div
+            className={cn(
+               'grid transition-[grid-template-rows] duration-200 ease-out',
+               open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+            )}
+         >
+            <div className="overflow-hidden">{children}</div>
+         </div>
       </div>
    );
 }
@@ -85,15 +125,12 @@ export default function Reviews({
    const { orgId } = useParams<{ orgId: string }>();
    const source = listTab === 'for-you' ? forYouReviews : createdReviews;
 
-   const groups =
-      listTab === 'for-you'
-         ? [{ label: 'Completed', items: source }]
-         : (['merged', 'closed'] as ReviewStatus[])
-              .map((status) => ({
-                 label: GROUP_LABELS[status],
-                 items: source.filter((review) => review.status === status),
-              }))
-              .filter((group) => group.items.length > 0);
+   const groups = (['open', 'merged', 'closed'] as ReviewStatus[])
+      .map((status) => ({
+         label: status === 'merged' && listTab === 'for-you' ? 'Completed' : GROUP_LABELS[status],
+         items: source.filter((review) => review.status === status),
+      }))
+      .filter((group) => group.items.length > 0);
 
    return (
       <div className="w-full h-full flex overflow-hidden">
@@ -134,8 +171,7 @@ export default function Reviews({
             </div>
             <div className="flex-1 overflow-y-auto">
                {groups.map((group) => (
-                  <div key={group.label}>
-                     <GroupHeader label={group.label} />
+                  <ReviewGroup key={group.label} label={group.label} count={group.items.length}>
                      {group.items.map((review) => (
                         <ReviewRow
                            key={review.id}
@@ -144,7 +180,7 @@ export default function Reviews({
                            selected={review.id === selectedReviewId}
                         />
                      ))}
-                  </div>
+                  </ReviewGroup>
                ))}
             </div>
          </div>

@@ -112,9 +112,7 @@ export function ReviewOverview({ review }: { review: Review }) {
                   >
                      <IssueCheckIcon />
                      <span className="font-medium">{review.resolves.identifier}</span>
-                     <span className="text-muted-foreground truncate">
-                        {review.resolves.title}
-                     </span>
+                     <span className="text-muted-foreground truncate">{review.resolves.title}</span>
                   </Link>
                </div>
 
@@ -228,7 +226,11 @@ export function ReviewOverview({ review }: { review: Review }) {
                <span className="text-sm font-medium">Status</span>
                <span className="inline-flex items-center gap-1.5 text-sm">
                   <PrIcon status={review.status} />
-                  {review.status === 'merged' ? 'Merged' : 'Closed'}
+                  {review.status === 'merged'
+                     ? 'Merged'
+                     : review.status === 'closed'
+                       ? 'Closed'
+                       : 'Open'}
                </span>
             </div>
             <div className="flex flex-col gap-2">
