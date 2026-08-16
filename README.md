@@ -40,10 +40,10 @@ pnpm dev
 
 ## Star History
 
-<a href="https://www.star-history.com/#ln-dev7/circle&Date">
+<a href="https://star-history.dera.page/#ln-dev7/circle&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ln-dev7/circle&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ln-dev7/circle&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ln-dev7/circle&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=ln-dev7/circle&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=ln-dev7/circle&type=Date" />
+   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=ln-dev7/circle&type=Date" />
  </picture>
 </a>
