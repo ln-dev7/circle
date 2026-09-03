@@ -119,6 +119,7 @@ Two flavors live side by side and expose hook-shaped APIs:
 | --- | --- | --- | --- |
 | `issues-store.ts` | Zustand | Holds the issues array + `issuesByStatus`; CRUD (`addIssue`, `updateIssue`, `deleteIssue`, `updateIssueStatus/Priority/Assignee/Project`, label add/remove); read filters (`filterByStatus/Priority/Assignee/Label/Project/Cycle`, `searchIssues`, `filterIssues` — supports status/assignee/priority/labels/project/cycle/statusType) | ✅ the main mutable store |
 | `notifications-store.ts` | Zustand | Inbox items, selection, read/unread | ✅ |
+| `triage-store.ts` | Zustand | The team intake queue + selection; `accept` promotes the item into a Todo issue (calls `issues-store.addIssue`), `decline`/`snooze` clear it | ✅ |
 | `filter-store.ts` | **nuqs** | Issue filters in the URL under a single `?filters=` param — the state is bazza/ui's `FiltersState` (`{ columnId, type, operator, values }[]`), so operators like *is not* / *exclude* survive in shareable URLs | URL state |
 | `projects-filter-store.ts`, `team-filter-store.ts`, `members-filter-store.ts` | **nuqs** | Per-page filters + sorting in the URL (`?sort=…`) | URL state |
 | `display-settings-store.ts` | Zustand (persisted) | Linear-style "Display" options: grouping (status/assignee/priority/project/none), ordering (priority/created/title), completed-issue visibility, show empty groups, per-row display properties (ID, status, priority, labels, project, due date, created, assignee, cycle) | UI state |
@@ -238,7 +239,17 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   display options (`store/initiatives-display-store.ts`: grouping/ordering/columns) and an
   Owner/Team/Health side panel; detail page with Overview (properties, progress area chart,
   Health/Status/Teams/Leads breakdowns, projects table), Activity and Projects (reuses
-  `ProjectsTimeline`) tabs. Data in `mock-data/initiatives.ts` (references project ids).
+  `ProjectsTimeline` beside the same properties/progress rail) tabs. Data in
+  `mock-data/initiatives.ts` (references project ids; `leadTeamId` + a `canceled` status);
+  `app/[orgId]/team/[teamId]/initiatives/` reuses the list scoped through
+  `getTeamInitiatives()` (lead team or any project owned by the team).
+- **Triage** (`components/common/triage/` + `app/[orgId]/team/[teamId]/triage/`) — the
+  team intake queue, Linear-style split view: queue on the left (reporter, age), empty
+  state or the selected item on the right. The detail carries Accept/Decline/Snooze
+  (Accept promotes the item into a real Todo issue via `store/issues-store.ts`), a
+  "Triage Intelligence" card (suggested assignee/project/labels + related issues) and a
+  properties rail. Data in `mock-data/triage.ts`, queue state in `store/triage-store.ts`;
+  the sidebar entry (and its count badge) only renders for teams with pending items.
 - **Views** (`components/common/views/` + `app/[orgId]/views/` + `app/[orgId]/view/[viewId]/`)
   — saved views: list with Issues/Projects tabs and display options
   (`store/views-display-store.ts`); detail page applies the view's declarative filter
