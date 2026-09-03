@@ -147,10 +147,89 @@ function PropertyRow({ label, children }: { label: string; children: React.React
    );
 }
 
-function Overview({ initiative }: { initiative: Initiative }) {
+/** Right rail shared by the Overview and Projects tabs: properties, progress, activity. */
+function InitiativeAside({ initiative }: { initiative: Initiative }) {
    const completed = countCompletedProjects(initiative);
    const total = initiative.projectIds.length;
 
+   return (
+      <aside className="hidden lg:flex flex-col w-80 shrink-0 border-l h-full overflow-y-auto p-5 gap-6 bg-container">
+         <div className="flex flex-col gap-3">
+            <span className="text-sm font-medium">Properties</span>
+            <PropertyRow label="Status">
+               <span className="inline-flex items-center gap-1.5">
+                  <InitiativeStatusIcon status={initiative.status} />
+                  {INITIATIVE_STATUS_META[initiative.status].label}
+               </span>
+            </PropertyRow>
+            <PropertyRow label="Priority">
+               <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                  <initiative.priority.icon className="size-4" />
+                  {initiative.priority.name}
+               </span>
+            </PropertyRow>
+            <PropertyRow label="Owner">
+               {initiative.owner ? (
+                  <span className="inline-flex items-center gap-1.5">
+                     <Avatar className="size-4">
+                        <AvatarImage src={initiative.owner.avatarUrl} alt={initiative.owner.name} />
+                        <AvatarFallback className="text-[8px]">
+                           {initiative.owner.name[0]}
+                        </AvatarFallback>
+                     </Avatar>
+                     {initiative.owner.name}
+                  </span>
+               ) : (
+                  <span className="text-muted-foreground inline-flex items-center gap-1.5">
+                     <UserRound className="size-4" /> Add owner
+                  </span>
+               )}
+            </PropertyRow>
+            <PropertyRow label="Target date">
+               <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                  <CalendarRange className="size-4" />
+                  {initiative.target ?? 'Add target date'}
+               </span>
+            </PropertyRow>
+            <PropertyRow label="Labels">
+               <span className="text-muted-foreground inline-flex items-center gap-1.5">
+                  <Tag className="size-4" /> Add label
+               </span>
+            </PropertyRow>
+            <PropertyRow label="Projects">
+               <span className="text-muted-foreground text-xs">
+                  {completed} / {total} completed
+               </span>
+            </PropertyRow>
+         </div>
+
+         <InitiativeProgressPanel initiative={initiative} />
+
+         <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+               <span className="text-sm font-medium">Activity</span>
+               <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  See all
+               </button>
+            </div>
+            <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+               <span className="flex items-start gap-2">
+                  <FilePenLine className="size-3.5 mt-px shrink-0" />
+                  {initiative.owner?.name ?? 'someone'} renamed the initiative ·{' '}
+                  {formatTarget(initiative.createdAt)}
+               </span>
+               <span className="flex items-start gap-2">
+                  <FileText className="size-3.5 mt-px shrink-0" />
+                  {initiative.owner?.name ?? 'someone'} created the initiative ·{' '}
+                  {formatTarget(initiative.createdAt)}
+               </span>
+            </div>
+         </div>
+      </aside>
+   );
+}
+
+function Overview({ initiative }: { initiative: Initiative }) {
    return (
       <div className="w-full h-full flex overflow-hidden">
          <div className="flex-1 min-w-0 overflow-y-auto">
@@ -225,82 +304,7 @@ function Overview({ initiative }: { initiative: Initiative }) {
             </div>
          </div>
 
-         <aside className="hidden lg:flex flex-col w-80 shrink-0 border-l h-full overflow-y-auto p-5 gap-6 bg-container">
-            <div className="flex flex-col gap-3">
-               <span className="text-sm font-medium">Properties</span>
-               <PropertyRow label="Status">
-                  <span className="inline-flex items-center gap-1.5">
-                     <InitiativeStatusIcon status={initiative.status} />
-                     {INITIATIVE_STATUS_META[initiative.status].label}
-                  </span>
-               </PropertyRow>
-               <PropertyRow label="Priority">
-                  <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                     <initiative.priority.icon className="size-4" />
-                     {initiative.priority.name}
-                  </span>
-               </PropertyRow>
-               <PropertyRow label="Owner">
-                  {initiative.owner ? (
-                     <span className="inline-flex items-center gap-1.5">
-                        <Avatar className="size-4">
-                           <AvatarImage
-                              src={initiative.owner.avatarUrl}
-                              alt={initiative.owner.name}
-                           />
-                           <AvatarFallback className="text-[8px]">
-                              {initiative.owner.name[0]}
-                           </AvatarFallback>
-                        </Avatar>
-                        {initiative.owner.name}
-                     </span>
-                  ) : (
-                     <span className="text-muted-foreground inline-flex items-center gap-1.5">
-                        <UserRound className="size-4" /> Add owner
-                     </span>
-                  )}
-               </PropertyRow>
-               <PropertyRow label="Target date">
-                  <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                     <CalendarRange className="size-4" />
-                     {initiative.target ?? 'Add target date'}
-                  </span>
-               </PropertyRow>
-               <PropertyRow label="Labels">
-                  <span className="text-muted-foreground inline-flex items-center gap-1.5">
-                     <Tag className="size-4" /> Add label
-                  </span>
-               </PropertyRow>
-               <PropertyRow label="Projects">
-                  <span className="text-muted-foreground text-xs">
-                     {completed} / {total} completed
-                  </span>
-               </PropertyRow>
-            </div>
-
-            <InitiativeProgressPanel initiative={initiative} />
-
-            <div className="flex flex-col gap-3">
-               <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Activity</span>
-                  <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                     See all
-                  </button>
-               </div>
-               <div className="flex flex-col gap-2 text-xs text-muted-foreground">
-                  <span className="flex items-start gap-2">
-                     <FilePenLine className="size-3.5 mt-px shrink-0" />
-                     {initiative.owner?.name ?? 'someone'} renamed the initiative ·{' '}
-                     {formatTarget(initiative.createdAt)}
-                  </span>
-                  <span className="flex items-start gap-2">
-                     <FileText className="size-3.5 mt-px shrink-0" />
-                     {initiative.owner?.name ?? 'someone'} created the initiative ·{' '}
-                     {formatTarget(initiative.createdAt)}
-                  </span>
-               </div>
-            </div>
-         </aside>
+         <InitiativeAside initiative={initiative} />
       </div>
    );
 }
@@ -369,6 +373,17 @@ export default function InitiativeDetails({ initiativeId }: { initiativeId: stri
    }
 
    if (tab === 'activity') return <Activity initiative={initiative} />;
-   if (tab === 'projects') return <ProjectsTimeline groups={timelineGroups} />;
+   if (tab === 'projects') {
+      // The Linear layout: timeline on the left, the same rail as the
+      // overview (properties, progress chart, activity) on the right.
+      return (
+         <div className="w-full h-full flex overflow-hidden">
+            <div className="flex-1 min-w-0 h-full overflow-hidden">
+               <ProjectsTimeline groups={timelineGroups} />
+            </div>
+            <InitiativeAside initiative={initiative} />
+         </div>
+      );
+   }
    return <Overview initiative={initiative} />;
 }

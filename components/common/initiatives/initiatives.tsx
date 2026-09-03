@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import {
    countCompletedProjects,
    getInitiativeProjects,
+   getTeamInitiatives,
    Initiative,
    INITIATIVE_STATUS_META,
    initiatives as allInitiatives,
@@ -29,11 +30,9 @@ import {
 } from '@/mock-data/initiatives';
 import { priorities } from '@/mock-data/priorities';
 import { health as allHealth } from '@/mock-data/projects';
+import { teams } from '@/mock-data/teams';
 import { users } from '@/mock-data/users';
-import {
-   InitiativesFilterType,
-   useInitiativesFilterStore,
-} from '@/store/initiatives-filter-store';
+import { InitiativesFilterType, useInitiativesFilterStore } from '@/store/initiatives-filter-store';
 import {
    InitiativesDisplayProperties,
    useInitiativesDisplayStore,
@@ -211,6 +210,7 @@ const PROPERTY_CHIPS: { key: keyof InitiativesDisplayProperties; label: string }
    { key: 'status', label: 'Status' },
    { key: 'priority', label: 'Priority' },
    { key: 'owner', label: 'Owner' },
+   { key: 'leadTeam', label: 'Lead team' },
    { key: 'target', label: 'Target date' },
    { key: 'projects', label: 'Projects' },
    { key: 'health', label: 'Health' },
@@ -370,6 +370,20 @@ function InitiativeRow({
                )}
             </span>
          )}
+         {displayProperties.leadTeam && (
+            <span className="hidden lg:flex items-center gap-1.5 w-24 shrink-0 text-xs text-muted-foreground min-w-0">
+               {(() => {
+                  const team = teams.find((entry) => entry.id === initiative.leadTeamId);
+                  if (!team) return '—';
+                  return (
+                     <>
+                        <span className="text-sm leading-none">{team.icon}</span>
+                        <span className="truncate">{team.name}</span>
+                     </>
+                  );
+               })()}
+            </span>
+         )}
          {displayProperties.target && (
             <span className="hidden md:block w-20 shrink-0 text-xs text-muted-foreground">
                {initiative.target ?? '—'}
@@ -408,7 +422,7 @@ function InitiativeRow({
 
 /* ---------------------------------- page ---------------------------------- */
 
-export default function Initiatives() {
+export default function Initiatives({ teamId }: { teamId?: string } = {}) {
    const { orgId } = useParams<{ orgId: string }>();
    const [tab, setTab] = useQueryState('tab', parseAsStringLiteral(TABS).withDefault('active'));
    const { filters } = useInitiativesFilterStore();
@@ -416,7 +430,7 @@ export default function Initiatives() {
    const [showPanel, setShowPanel] = useState(true);
 
    const displayed = useMemo(() => {
-      let list = allInitiatives.slice();
+      let list = teamId ? getTeamInitiatives(teamId) : allInitiatives.slice();
       if (tab !== 'all') list = list.filter((initiative) => initiative.status === tab);
       if (filters.status.length > 0) {
          list = list.filter((initiative) => filters.status.includes(initiative.status));
@@ -436,7 +450,7 @@ export default function Initiatives() {
       else if (ordering === 'target')
          list.sort((a, b) => (a.target ?? '').localeCompare(b.target ?? ''));
       return list;
-   }, [tab, filters, ordering]);
+   }, [tab, filters, ordering, teamId]);
 
    const groups = useMemo(() => {
       if (grouping !== 'status') return null;
@@ -493,6 +507,9 @@ export default function Initiatives() {
                )}
                {displayProperties.owner && (
                   <span className="hidden sm:block w-14 shrink-0">Owner</span>
+               )}
+               {displayProperties.leadTeam && (
+                  <span className="hidden lg:block w-24 shrink-0">Lead team</span>
                )}
                {displayProperties.target && (
                   <span className="hidden md:block w-20 shrink-0">Target</span>

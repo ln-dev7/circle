@@ -2,7 +2,7 @@ import { Priority, priorities } from './priorities';
 import { Health, health, Project, projects } from './projects';
 import { User, users } from './users';
 
-export type InitiativeStatus = 'active' | 'planned' | 'completed';
+export type InitiativeStatus = 'active' | 'planned' | 'completed' | 'canceled';
 
 export interface Initiative {
    id: string;
@@ -13,6 +13,8 @@ export interface Initiative {
    status: InitiativeStatus;
    priority: Priority;
    owner?: User;
+   /** Team steering the initiative (see mock-data/teams) — Linear "Lead team". */
+   leadTeamId?: string;
    /** Target label shown in the list ("Q3 2026", "Sep 30th", …). */
    target?: string;
    health: Health;
@@ -20,13 +22,11 @@ export interface Initiative {
    createdAt: string;
 }
 
-export const INITIATIVE_STATUS_META: Record<
-   InitiativeStatus,
-   { label: string; color: string }
-> = {
+export const INITIATIVE_STATUS_META: Record<InitiativeStatus, { label: string; color: string }> = {
    active: { label: 'Active', color: '#f2c94c' },
    planned: { label: 'Planned', color: '#95a2b3' },
    completed: { label: 'Completed', color: '#5e6ad2' },
+   canceled: { label: 'Canceled', color: '#95a2b3' },
 };
 
 const noUpdate = health[0];
@@ -84,6 +84,7 @@ export const initiatives: Initiative[] = [
       status: 'active',
       priority: priorities[1],
       owner: users[4],
+      leadTeamId: 'PERF',
       target: 'Q3 2026',
       health: byId('on-track'),
       projectIds: ['6', '12', '18'],
@@ -109,6 +110,7 @@ export const initiatives: Initiative[] = [
       status: 'planned',
       priority: priorities[2],
       owner: users[2],
+      leadTeamId: 'DESIGN',
       target: 'Q4 2026',
       health: noUpdate,
       projectIds: ['2', '9', '15'],
@@ -175,7 +177,46 @@ export const initiatives: Initiative[] = [
       projectIds: ['12'],
       createdAt: '2026-02-03',
    },
+   {
+      id: 'storybook-migration-first-pass',
+      name: 'Storybook migration — first pass',
+      description:
+         'Move every story to the new format in one sweep. Called off: the codemod choked on custom decorators, replaced by the incremental second pass.',
+      icon: '📖',
+      status: 'canceled',
+      priority: priorities[2],
+      owner: users[2],
+      leadTeamId: 'CORE',
+      target: 'Sep 30th',
+      health: noUpdate,
+      projectIds: ['3', '7'],
+      createdAt: '2026-05-02',
+   },
+   {
+      id: 'storybook-migration-second-pass',
+      name: 'Storybook migration — second pass',
+      description:
+         'Same goal, sliced package by package: each chunk migrates, ships and locks before the next one starts.',
+      icon: '📖',
+      status: 'planned',
+      priority: priorities[2],
+      owner: users[2],
+      leadTeamId: 'CORE',
+      target: 'Sep 30th',
+      health: noUpdate,
+      projectIds: ['13', '19'],
+      createdAt: '2026-06-28',
+   },
 ];
+
+/** Initiatives a team sees: it leads them, or one of its projects is inside. */
+export function getTeamInitiatives(teamId: string): Initiative[] {
+   return initiatives.filter(
+      (initiative) =>
+         initiative.leadTeamId === teamId ||
+         getInitiativeProjects(initiative).some((project) => project.teamId === teamId)
+   );
+}
 
 export function getInitiativeById(id: string): Initiative | undefined {
    return initiatives.find((initiative) => initiative.id === id);

@@ -2,7 +2,7 @@
 
 import { InitiativeStatus } from '@/mock-data/initiatives';
 
-/** Linear-style initiative status icon: dashed planned ring, partial active pie, check when completed. */
+/** Linear-style initiative status icon: dashed planned ring, partial active pie, check when completed, crossed circle when canceled. */
 export function InitiativeStatusIcon({
    status,
    size = 14,
@@ -21,6 +21,20 @@ export function InitiativeStatusIcon({
                stroke="#95a2b3"
                strokeWidth="1.6"
                strokeDasharray="2.4 2"
+            />
+         </svg>
+      );
+   }
+   if (status === 'canceled') {
+      return (
+         <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden>
+            <circle cx="8" cy="8" r="7" fill="#95a2b3" />
+            <path
+               d="M5.6 5.6 10.4 10.4 M10.4 5.6 5.6 10.4"
+               fill="none"
+               stroke="white"
+               strokeWidth="1.6"
+               strokeLinecap="round"
             />
          </svg>
       );

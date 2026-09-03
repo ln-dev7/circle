@@ -9,6 +9,7 @@ export interface InitiativesDisplayProperties {
    status: boolean;
    priority: boolean;
    owner: boolean;
+   leadTeam: boolean;
    target: boolean;
    projects: boolean;
    health: boolean;
@@ -35,6 +36,7 @@ export const useInitiativesDisplayStore = create<InitiativesDisplayState>()(
             status: true,
             priority: true,
             owner: true,
+            leadTeam: true,
             target: true,
             projects: true,
             health: true,
@@ -50,6 +52,7 @@ export const useInitiativesDisplayStore = create<InitiativesDisplayState>()(
                },
             })),
       }),
-      { name: 'initiatives-display' }
+      // v2: the leadTeam column joined the set (old persisted shapes lack it).
+      { name: 'initiatives-display-v2' }
    )
 );
