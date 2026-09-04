@@ -795,6 +795,236 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
       ],
       relatedIds: ['LNUI-701'],
    },
+   {
+      identifier: 'LNUI-1000',
+      description: [
+         { type: 'heading', text: 'Context' },
+         {
+            type: 'paragraph',
+            text: 'The command palette is the most-used surface of the library — **41% of sessions** open it at least once — and the current implementation has hit its ceiling: flat action list, no context awareness, and every consumer app forking it to inject custom actions. v2 makes the palette a platform.',
+         },
+         {
+            type: 'paragraph',
+            text: 'Three pillars: a proper fuzzy matcher (typo-tolerant, weighted by recency), **per-context ranking** (the palette knows whether you are in a table, a form or an editor), and a typed plugin API so apps stop patching internals.',
+         },
+         {
+            type: 'image',
+            alt: 'Command palette v2 — ranked results with context group headers',
+            caption:
+               'Ranked results: context actions first, then recents, then the global catalog.',
+            aspect: 'wide',
+         },
+         { type: 'heading', text: 'Plugin API sketch' },
+         {
+            type: 'code',
+            language: 'tsx',
+            code: "import { definePaletteSource } from '@lndev-ui/palette';\n\nexport const deploySource = definePaletteSource({\n   id: 'deploys',\n   // Ranked only when the current route matches.\n   context: (ctx) => ctx.route.startsWith('/deploys'),\n   actions: async (query) => {\n      const environments = await fetchEnvironments(query);\n      return environments.map((env) => ({\n         id: `deploy-${env.id}`,\n         label: `Deploy to ${env.name}`,\n         icon: RocketIcon,\n         shortcut: env.isProd ? undefined : ['d', env.key],\n         run: () => deploy(env),\n      }));\n   },\n});",
+         },
+         { type: 'heading', text: 'Scope' },
+         {
+            type: 'bullet-list',
+            items: [
+               'Fuzzy matcher with per-character scoring, typo tolerance of 1, and recency boost (half-life: 7 days)',
+               'Context providers: table, form, editor, navigation — extensible through the plugin API',
+               'Plugin API: typed sources, async actions, loading states, error boundaries per source',
+               'Full keyboard model: nested pages, back with `Backspace`, peek with `Tab`',
+               'Latency budget: **8ms** per keystroke at 5,000 registered actions',
+            ],
+         },
+         { type: 'heading', text: 'Acceptance criteria' },
+         {
+            type: 'checklist',
+            items: [
+               {
+                  text: 'Matcher beats the current one on the recorded query corpus (top-3 hit rate ≥ 92%)',
+                  checked: true,
+               },
+               {
+                  text: 'p95 keystroke-to-paint under 8ms with 5,000 actions on the perf rig',
+                  checked: true,
+               },
+               {
+                  text: 'Plugin API covers the four forked use cases found in the ecosystem scan',
+                  checked: false,
+               },
+               {
+                  text: 'Zero regressions on the palette a11y audit (focus, announcements, reduced motion)',
+                  checked: false,
+               },
+               { text: 'Migration guide + codemod for the v1 `actions` prop', checked: false },
+            ],
+         },
+         { type: 'divider' },
+         {
+            type: 'quote',
+            text: 'Every app we surveyed rebuilt ranking on top of the palette. If the library ranked by context, we could delete about 400 lines each.',
+            author: 'ecosystem scan, July 2026',
+         },
+         {
+            type: 'issue-ref',
+            identifier: 'LNUI-703',
+            note: 'the nested-portal focus work this builds on',
+         },
+      ],
+      subIssueIds: ['LNUI-709', 'LNUI-710', 'LNUI-711', 'LNUI-712'],
+      relatedIds: ['LNUI-703', 'LNUI-643'],
+      blockedByIds: [],
+      prLinks: [
+         {
+            id: 'pr-1',
+            title: 'feat(palette): scoring core + recorded-corpus benchmark',
+            status: 'merged',
+         },
+         {
+            id: 'pr-2',
+            title: 'feat(palette): context providers and ranking pipeline',
+            status: 'open',
+         },
+         {
+            id: 'pr-3',
+            title: 'docs(palette): plugin API reference and migration guide',
+            status: 'draft',
+         },
+      ],
+      milestone: 'v4.5 — Command everything',
+      activity: [
+         {
+            kind: 'event',
+            id: 'a1',
+            actor: users[0],
+            event: 'created',
+            text: 'created the issue',
+            timeAgo: '3w ago',
+         },
+         {
+            kind: 'event',
+            id: 'a2',
+            actor: users[0],
+            event: 'label',
+            text: 'added Feature, UI Enhancement and Performance',
+            timeAgo: '3w ago',
+         },
+         {
+            kind: 'comment',
+            id: 'a3',
+            actor: users[1],
+            timeAgo: '2w ago',
+            body: [
+               {
+                  type: 'paragraph',
+                  text: 'Ran the recorded corpus against the prototype matcher: top-3 hit rate goes from 81% to **93.4%**, and typo tolerance catches 610 of the 640 near-miss queries. The recency boost matters more than I expected — without it we lose 4 points.',
+               },
+               {
+                  type: 'code',
+                  language: 'text',
+                  code: 'corpus: 18,420 queries\ntop-1  72.1%  (+9.8)\ntop-3  93.4%  (+12.4)\np95    3.1ms @ 5k actions',
+               },
+            ],
+            reactions: [
+               { emoji: '🔥', count: 6 },
+               { emoji: '🚀', count: 3 },
+            ],
+         },
+         {
+            kind: 'event',
+            id: 'a4',
+            actor: users[1],
+            event: 'pr',
+            text: 'linked feat(palette): scoring core + recorded-corpus benchmark',
+            timeAgo: '2w ago',
+         },
+         {
+            kind: 'event',
+            id: 'a5',
+            actor: users[0],
+            event: 'status',
+            text: 'moved from Todo to In Progress',
+            timeAgo: '12d ago',
+         },
+         {
+            kind: 'comment',
+            id: 'a6',
+            actor: users[3],
+            timeAgo: '10d ago',
+            body: [
+               {
+                  type: 'paragraph',
+                  text: 'Design note: context groups need their own headers in the results list, otherwise the ranking looks random to people who do not know why a table action outranks their recent files. Mock attached to the description — the group header carries the context icon.',
+               },
+            ],
+            reactions: [{ emoji: '👍', count: 4 }],
+         },
+         {
+            kind: 'comment',
+            id: 'a7',
+            actor: users[16],
+            timeAgo: '1w ago',
+            body: [
+               {
+                  type: 'paragraph',
+                  text: 'A11y pass on the prototype: announcements read the group name before the action, which doubles the verbosity. Suggest announcing the group only when it changes — same pattern the combobox rewrite landed in LNUI-388.',
+               },
+               {
+                  type: 'checklist',
+                  items: [
+                     { text: 'Announce group transitions only', checked: true },
+                     { text: 'aria-activedescendant kept during async loads', checked: true },
+                     {
+                        text: 'Reduced motion: replace slide with fade for page transitions',
+                        checked: false,
+                     },
+                  ],
+               },
+            ],
+            reactions: [{ emoji: '🙏', count: 2 }],
+         },
+         {
+            kind: 'event',
+            id: 'a8',
+            actor: users[2],
+            event: 'priority',
+            text: 'raised the priority to Urgent — v4.5 headline feature',
+            timeAgo: '6d ago',
+         },
+         {
+            kind: 'event',
+            id: 'a9',
+            actor: users[0],
+            event: 'cycle',
+            text: 'added to Cycle 21',
+            timeAgo: '6d ago',
+         },
+         {
+            kind: 'comment',
+            id: 'a10',
+            actor: users[10],
+            timeAgo: '3d ago',
+            body: [
+               {
+                  type: 'paragraph',
+                  text: 'Perf rig results on the ranking pipeline PR: **7.2ms p95** at 5,000 actions, 11.8ms at 10,000. We are inside budget at the target size; past 8k we should chunk the scoring pass across frames. Filed the follow-up as a sub-issue.',
+               },
+            ],
+            reactions: [
+               { emoji: '📈', count: 3 },
+               { emoji: '💯', count: 2 },
+            ],
+         },
+         {
+            kind: 'comment',
+            id: 'a11',
+            actor: users[0],
+            timeAgo: '2h ago',
+            body: [
+               {
+                  type: 'paragraph',
+                  text: 'Plugin API surface is up for review (PR linked). Last open questions before the freeze: error boundaries per source vs global, and whether `context()` should be sync-only. Weighing in on both in the PR — review by Thursday and we make the cycle.',
+               },
+            ],
+            reactions: [{ emoji: '👀', count: 5 }],
+         },
+      ],
+   },
 ];
 
 /* -------------------------------------------------------------------------- */
